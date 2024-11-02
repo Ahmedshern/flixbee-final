@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { updateEmbyUserPolicy } from '@/lib/subscription';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
 
@@ -33,6 +34,7 @@ interface User {
   subscriptionStatus: string;
   subscriptionEnd: string | null;
   plan: string | null;
+  paymentReceipts?: string[];
 }
 
 export default function AdminDashboard() {
@@ -41,6 +43,8 @@ export default function AdminDashboard() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [receiptsDialogOpen, setReceiptsDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -65,10 +69,29 @@ export default function AdminDashboard() {
     setActionLoading(userId);
     try {
       const enableAccess = currentStatus !== 'active';
+      
+      // Update Emby access
       await updateEmbyUserPolicy(embyUserId, enableAccess);
+      
+      // Update Firestore user status
+      await updateDoc(doc(db, 'users', userId), {
+        subscriptionStatus: enableAccess ? 'active' : 'inactive'
+      });
+      
+      // Refresh the users list
       await fetchUsers();
+      
+      toast({
+        title: "Success",
+        description: `User access has been ${enableAccess ? 'enabled' : 'disabled'}`,
+      });
     } catch (error) {
       console.error('Error toggling access:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update user access",
+        variant: "destructive",
+      });
     } finally {
       setActionLoading(null);
     }
@@ -150,6 +173,11 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleViewReceipts = (user: User) => {
+    setSelectedUser(user);
+    setReceiptsDialogOpen(true);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -174,6 +202,7 @@ export default function AdminDashboard() {
               <TableHead>Subscription Status</TableHead>
               <TableHead>Plan</TableHead>
               <TableHead>Subscription End</TableHead>
+              <TableHead>Receipts</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -187,6 +216,16 @@ export default function AdminDashboard() {
                   {user.subscriptionEnd 
                     ? new Date(user.subscriptionEnd).toLocaleDateString()
                     : 'N/A'}
+                </TableCell>
+                <TableCell>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleViewReceipts(user)}
+                    disabled={!user.paymentReceipts?.length}
+                  >
+                    View Receipts ({user.paymentReceipts?.length || 0})
+                  </Button>
                 </TableCell>
                 <TableCell className="space-x-2">
                   <Button
@@ -220,7 +259,7 @@ export default function AdminDashboard() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription className="text-muted-foreground">
               This will permanently delete the user from both Firebase and Emby.
               This action cannot be undone.
             </AlertDialogDescription>
@@ -234,6 +273,34 @@ export default function AdminDashboard() {
                 'Delete'
               )}
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={receiptsDialogOpen} onOpenChange={setReceiptsDialogOpen}>
+        <AlertDialogContent className="max-w-3xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Payment Receipts - {selectedUser?.email}</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-4">
+              {selectedUser?.paymentReceipts?.map((receipt, index) => (
+                <div key={index} className="border rounded p-4">
+                  <a 
+                    href={receipt} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:underline"
+                  >
+                    Receipt #{index + 1} - View/Download
+                  </a>
+                </div>
+              ))}
+              {(!selectedUser?.paymentReceipts || selectedUser.paymentReceipts.length === 0) && (
+                <p>No receipts uploaded</p>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Close</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

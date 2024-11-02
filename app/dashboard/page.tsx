@@ -54,18 +54,29 @@ export default function DashboardPage() {
   return (
     <>
       <DashboardHeader />
-      <div className="container py-8">
-        <div className="grid gap-8">
+      <div 
+        className="fixed inset-0 -z-10"
+        style={{
+          backgroundImage: `
+            radial-gradient(circle at 50% 50%, rgba(30, 58, 138, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 100% 100%, rgba(147, 51, 234, 0.1) 0%, transparent 50%)
+          `,
+          backgroundColor: '#030712',
+        }}
+      />
+      <div className="container py-4 px-4 md:py-8 md:px-8">
+        <div className="grid gap-4 md:gap-8">
           <SubscriptionStatus userData={userData} />
 
-          <div className="grid gap-8 md:grid-cols-2">
-            <Card>
+          <div className="grid gap-4 md:gap-8 md:grid-cols-2">
+            <Card className="backdrop-blur-sm bg-black/40 border-zinc-800">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
                   <CreditCard className="h-5 w-5" />
                   Billing
                 </CardTitle>
-                <CardDescription>Manage your subscription and payments</CardDescription>
+                <CardDescription className="text-sm">Manage your subscription and payments</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button variant="outline" className="w-full" asChild>
@@ -74,13 +85,13 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="backdrop-blur-sm bg-black/40 border-zinc-800">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
                   <Settings className="h-5 w-5" />
                   Account Settings
                 </CardTitle>
-                <CardDescription>Update your profile and preferences</CardDescription>
+                <CardDescription className="text-sm">Update your profile and preferences</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button variant="outline" className="w-full" asChild>

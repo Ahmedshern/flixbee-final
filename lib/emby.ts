@@ -11,9 +11,9 @@ export async function createEmbyUser(username: string, password: string) {
     const response = await fetch(`${EMBY_SERVER_URL}/Users/New`, {
       method: 'POST',
       headers: {
-        'X-Emby-Token': EMBY_API_KEY,
+        'X-Emby-Token': EMBY_API_KEY ?? '',
         'Content-Type': 'application/json',
-      },
+      } as HeadersInit,
       body: JSON.stringify({
         Name: username,
         Password: password,
@@ -36,9 +36,9 @@ export async function updateEmbyUserPassword(userId: string, newPassword: string
     const response = await fetch(`${EMBY_SERVER_URL}/Users/${userId}/Password`, {
       method: 'POST',
       headers: {
-        'X-Emby-Token': EMBY_API_KEY,
+        'X-Emby-Token': EMBY_API_KEY ?? '',
         'Content-Type': 'application/json',
-      },
+      } as HeadersInit,
       body: JSON.stringify({
         NewPw: newPassword,
       }),
@@ -57,7 +57,11 @@ export async function updateEmbyUserPassword(userId: string, newPassword: string
 
 export async function getEmbyUser(username: string): Promise<EmbyUser | null> {
   try {
-    const response = await fetch(`${EMBY_SERVER_URL}/Users?api_key=${EMBY_API_KEY}`);
+    const response = await fetch(`${EMBY_SERVER_URL}/Users?api_key=${EMBY_API_KEY ?? ''}`, {
+      headers: {
+        'Content-Type': 'application/json',
+      } as HeadersInit,
+    });
     const users = await response.json();
     return users.find((user: EmbyUser) => user.Name === username) || null;
   } catch (error) {
@@ -71,9 +75,9 @@ export async function updateEmbyUserPolicy(userId: string, isEnabled: boolean) {
     const response = await fetch(`${EMBY_SERVER_URL}/Users/${userId}/Policy`, {
       method: 'POST',
       headers: {
-        'X-Emby-Token': EMBY_API_KEY,
+        'X-Emby-Token': EMBY_API_KEY ?? '',
         'Content-Type': 'application/json',
-      },
+      } as HeadersInit,
       body: JSON.stringify({
         IsDisabled: !isEnabled,
       }),

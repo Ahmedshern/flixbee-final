@@ -5,10 +5,52 @@ const nextConfig = {
     EMBY_API_KEY: process.env.EMBY_API_KEY,
   },
   images: {
-    domains: ['167.172.75.130'],
+    domains: ['167.172.75.130', 'image.tmdb.org'],
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60,
   },
-  experimental: {
-    serverActions: true,
+  poweredByHeader: false,
+  compress: true,
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on'
+          },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains'
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN'
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin'
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()'
+          },
+          {
+            key: 'X-Robots-Tag',
+            value: 'index, follow'
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ]
+      }
+    ];
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {
@@ -21,20 +63,16 @@ const nextConfig = {
       };
     }
 
-    // Add transpilation for problematic node_modules
-    config.module.rules.push({
-      test: /\.js$/,
-      include: /node_modules\/undici/,
-      use: {
-        loader: 'babel-loader',
-        options: {
-          presets: ['@babel/preset-env'],
-          plugins: ['@babel/plugin-proposal-private-methods']
-        }
-      }
-    });
+    config.optimization = {
+      ...config.optimization,
+      usedExports: false,
+    };
 
     return config;
+  },
+  i18n: {
+    locales: ['en'],
+    defaultLocale: 'en',
   },
 };
 

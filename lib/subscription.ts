@@ -62,7 +62,27 @@ export async function deactivateSubscription(userId: string, embyUserId: string)
 }
 
 export const updateEmbyUserPolicy = async (userId: string, enableAccess: boolean) => {
-  // ... function implementation ...
+  try {
+    const response = await fetch(`${process.env.EMBY_SERVER_URL}/Users/${userId}/Policy`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Emby-Token': process.env.EMBY_API_KEY as string,
+      },
+      body: JSON.stringify({
+        IsDisabled: !enableAccess,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update Emby user policy: ${response.statusText}`);
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error updating Emby user policy:", error);
+    throw error;
+  }
 };
 
 export async function syncEmbyWithFirestore() {
@@ -118,3 +138,4 @@ async function checkEmbyUserStatus(embyUserId: string): Promise<boolean> {
     throw error;
   }
 }
+
