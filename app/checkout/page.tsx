@@ -95,7 +95,7 @@ export default function CheckoutPage() {
               <h3 className="text-lg font-medium">Bank Transfer Details</h3>
               <div className="rounded-md bg-secondary p-4">
                 <p>Bank: Bank of Maldives</p>
-                <p>Account Name: BeeFlix Entertainment</p>
+                <p>Account Name: BuzzPlay Entertainment</p>
                 <p>Account Number: 7730000123456</p>
                 <p>Reference: {user?.uid?.slice(0, 8)}</p>
               </div>

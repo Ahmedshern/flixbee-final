@@ -12,42 +12,42 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "BeeFlix - Your Streaming Entertainment Hub",
-    template: "%s | BeeFlix"
+    default: "BuzzPlay - Your Streaming Entertainment Hub",
+    template: "%s | BuzzPlay"
   },
-  description: "Stream unlimited movies, TV shows, and more on BeeFlix. Start watching today with our premium streaming service.",
-  keywords: ["streaming", "movies", "TV shows", "entertainment", "BeeFlix", "watch online"],
-  authors: [{ name: "BeeFlix" }],
-  creator: "BeeFlix",
-  publisher: "BeeFlix",
+  description: "Stream unlimited movies, TV shows, and more on BuzzPlay. Start watching today with our premium streaming service.",
+  keywords: ["streaming", "movies", "TV shows", "entertainment", "BuzzPlay", "watch online"],
+  authors: [{ name: "BuzzPlay" }],
+  creator: "BuzzPlay",
+  publisher: "BuzzPlay",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://beeflix.com'),
+  metadataBase: new URL('https://BuzzPlay.com'),
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://beeflix.com',
-    title: 'BeeFlix - Your Streaming Entertainment Hub',
-    description: 'Stream unlimited movies, TV shows, and more on BeeFlix. Start watching today with our premium streaming service.',
-    siteName: 'BeeFlix',
+    url: 'https://BuzzPlay.com',
+    title: 'BuzzPlayy - Your Streaming Entertainment Hub',
+    description: 'Stream unlimited movies, TV shows, and more on BuzzPlay. Start watching today with our premium streaming service.',
+    siteName: 'BuzzPlay',
     images: [
       {
-        url: 'https://beeflix.com/og-image.jpg',
+        url: 'https://BuzzPlay.com/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'BeeFlix - Streaming Entertainment',
+        alt: 'BuzzPlay - Streaming Entertainment',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'BeeFlix - Your Streaming Entertainment Hub',
-    description: 'Stream unlimited movies, TV shows, and more on BeeFlix. Start watching today with our premium streaming service.',
-    images: ['https://beeflix.com/twitter-image.jpg'],
-    creator: '@beeflix',
+    title: 'BuzzPlay - Your Streaming Entertainment Hub',
+    description: 'Stream unlimited movies, TV shows, and more on BuzzPlay. Start watching today with our premium streaming service.',
+    images: ['https://BuzzPlay.com/twitter-image.jpg'],
+    creator: '@BuzzPlay',
   },
 };
 

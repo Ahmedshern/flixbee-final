@@ -56,7 +56,7 @@ export default function RegisterPage() {
       router.push("/dashboard");
       toast({
         title: "Account created!",
-        description: "Welcome to BeeFlix. Let's get you started with a subscription.",
+        description: "Welcome to BuzzPlay. Let's get you started with a subscription.",
       });
     } catch (error: any) {
       toast({

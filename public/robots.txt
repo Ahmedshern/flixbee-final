@@ -4,4 +4,4 @@ Disallow: /admin/
 Disallow: /dashboard/
 Disallow: /api/
 
-Sitemap: https://beeflix.com/sitemap.xml 
+Sitemap: https://BuzzPlay.com/sitemap.xml 

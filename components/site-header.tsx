@@ -96,7 +96,7 @@ export function SiteHeader() {
         >
           <Link href="/" className="flex items-center space-x-2 ml-4 md:ml-0">
             <Film className="h-6 w-6 text-yellow-500" />
-            <span className="font-bold text-xl">BeeFlix</span>
+            <span className="font-bold text-xl">BuzzPlay</span>
           </Link>
         </motion.div>
         <div className="mx-6">

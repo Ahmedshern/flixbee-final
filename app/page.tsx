@@ -53,17 +53,17 @@ export default function Home() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "BeeFlix",
-    "url": "https://beeflix.com",
+    "name": "BuzzPlayy",
+    "url": "https://BuzzPlay.com",
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://beeflix.com/search?q={search_term_string}",
+      "target": "https://BuzzPlay.com/search?q={search_term_string}",
       "query-input": "required name=search_term_string"
     },
     "sameAs": [
-      "https://twitter.com/beeflix",
-      "https://facebook.com/beeflix",
-      "https://instagram.com/beeflix"
+      "https://twitter.com/BuzzPlay",
+      "https://facebook.com/BuzzPlay",
+      "https://instagram.com/BuzzPlay"
     ]
   };
 
@@ -115,7 +115,7 @@ export default function Home() {
             transition={{ delay: 0.2, duration: 0.5 }}
             className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8"
           >
-            Stream unlimited movies, TV shows, and more. Start watching today with BeeFlix.
+            Stream unlimited movies, TV shows, and more. Start watching today with BuzzPlay.
           </motion.p>
           
           <motion.div

@@ -23,7 +23,7 @@ const handler = NextAuth({
           
           return {
             id: userCredential.user.uid,
-            email: userCredential.user.email,
+            email: credentials.email || "",
           };
         } catch (error) {
           return null;

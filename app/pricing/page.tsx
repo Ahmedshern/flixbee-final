@@ -67,79 +67,82 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="container py-8 px-4 md:py-16 md:px-8">
-      <AnimatedEntrance>
-        <div className="text-center mb-8 md:mb-16">
-          <h1 className="text-3xl md:text-5xl font-bold mb-4">Choose Your Plan</h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-sm md:text-base">
-            Select the perfect plan for your entertainment needs. All plans include access to our streaming platform and can be cancelled anytime.
-          </p>
-        </div>
-      </AnimatedEntrance>
+    <div className="relative min-h-screen">
+      {/* Modern gradient background */}
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px]" />
+        <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-primary/20 opacity-20 blur-[100px]" />
+        <div className="absolute right-[-20%] top-[-10%] -z-10 h-[580px] w-[580px] rounded-full bg-primary/30 opacity-20 blur-[100px]" />
+        <div className="absolute bottom-[-10%] left-[-20%] -z-10 h-[580px] w-[580px] rounded-full bg-primary/30 opacity-20 blur-[100px]" />
+      </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8 max-w-7xl mx-auto">
-        {plans.map((plan, index) => (
-          <AnimatedEntrance key={plan.name} delay={index * 0.2}>
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-              className="h-full"
-            >
-              <Card className={`flex flex-col h-full border-2 min-h-[600px] ${
-                plan.name === "Premium" 
-                  ? "border-primary shadow-lg relative bg-muted/50" 
-                  : "hover:border-primary"
-                } transition-all`}>
-                {plan.name === "Premium" && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
-                      Most Popular
-                    </span>
-                  </div>
-                )}
-                <CardHeader className="text-center pt-8 flex-none">
-                  <CardTitle className="text-2xl md:text-3xl mb-2">{plan.name}</CardTitle>
-                  <CardDescription className="text-base mb-4">{plan.description}</CardDescription>
-                  <div className="mb-4">
-                    <div className="flex items-baseline justify-center">
-                      <span className="text-4xl md:text-5xl font-bold">MVR {plan.price}</span>
+      {/* Content */}
+      <div className="container relative py-8 px-4 md:py-16 md:px-8">
+        <AnimatedEntrance>
+          <div className="text-center mb-8 md:mb-16">
+            <h1 className="text-3xl md:text-5xl font-bold mb-4 font-display">Choose Your Plan</h1>
+            <p className="text-muted-foreground max-w-2xl mx-auto text-sm md:text-base">
+              Select the perfect plan for your entertainment needs. All plans include access to our streaming platform and can be cancelled anytime.
+            </p>
+          </div>
+        </AnimatedEntrance>
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8 max-w-7xl mx-auto">
+          {plans.map((plan, index) => (
+            <AnimatedEntrance key={plan.name} delay={index * 0.2}>
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                className="h-full"
+              >
+                <Card className={`flex flex-col h-full border-2 min-h-[600px] backdrop-blur-sm bg-background/60 ${
+                  plan.name === "Premium" 
+                    ? "border-primary shadow-lg relative bg-muted/50" 
+                    : "hover:border-primary"
+                  } transition-all`}>
+                  {plan.name === "Premium" && (
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                      <span className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
+                        Most Popular
+                      </span>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex-1">
-                  <ul className="space-y-4 text-sm md:text-base">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start">
-                        <Check className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                <CardFooter className="pt-4 pb-8 flex-none">
-                  <Button 
-                    className="w-full h-12 text-base"
-                    onClick={() => handleSubscribe(plan.name)}
-                    variant={plan.name === "Premium" ? "default" : "outline"}
-                    size="lg"
-                  >
-                    {user ? "Subscribe Now" : "Get Started"}
-                  </Button>
-                </CardFooter>
-              </Card>
-            </motion.div>
-          </AnimatedEntrance>
-        ))}
+                  )}
+                  <CardHeader className="text-center pt-8 flex-none">
+                    <CardTitle className="text-2xl md:text-3xl mb-2">{plan.name}</CardTitle>
+                    <CardDescription className="text-base mb-4">{plan.description}</CardDescription>
+                    <div className="mb-4">
+                      <div className="flex items-baseline justify-center">
+                        <span className="text-4xl md:text-5xl font-bold">MVR {plan.price}</span>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="flex-1">
+                    <ul className="space-y-4 text-sm md:text-base">
+                      {plan.features.map((feature) => (
+                        <li key={feature} className="flex items-start">
+                          <Check className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                  <CardFooter className="pt-4 pb-8 flex-none">
+                    <Button 
+                      className="w-full h-12 text-base"
+                      onClick={() => handleSubscribe(plan.name)}
+                      variant={plan.name === "Premium" ? "default" : "outline"}
+                      size="lg"
+                    >
+                      {user ? "Subscribe Now" : "Get Started"}
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </motion.div>
+            </AnimatedEntrance>
+          ))}
+        </div>
       </div>
     </div>
   );
 }
-
-export const metadata: Metadata = {
-  title: 'Pricing Plans | BeeFlix',
-  description: 'Choose from our flexible streaming plans. Start watching unlimited movies and TV shows with BeeFlix today.',
-  openGraph: {
-    title: 'BeeFlix Streaming Plans',
-    description: 'Choose from our flexible streaming plans. Start watching unlimited movies and TV shows with BeeFlix today.',
-  }
-};
+;
