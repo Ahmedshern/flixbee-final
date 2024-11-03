@@ -1,5 +1,6 @@
 "use client";
 
+import React, { Suspense } from "react";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +16,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, Upload } from "lucide-react";
 import { updateEmbyUserPolicy } from "@/lib/subscription";
 
-export default function CheckoutPage() {
+function CheckoutPageContent() {
   const searchParams = useSearchParams();
   const plan = searchParams.get("plan");
   const { user } = useAuthContext();
@@ -129,5 +130,13 @@ export default function CheckoutPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CheckoutPageContent />
+    </Suspense>
   );
 }
