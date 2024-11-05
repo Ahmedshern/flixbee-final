@@ -87,3 +87,10 @@
   background-size: 80px 140px;
   background-position: 0 0, 0 0, 40px 70px, 40px 70px, 0 0, 40px 70px;
 }
+
+@font-face {
+  font-family: 'SequelSansBlack';
+  src: url('/fonts/sequel-sans-black-head.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}

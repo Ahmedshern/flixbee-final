@@ -152,8 +152,11 @@ export function SiteHeader() {
           transition={{ type: "spring", stiffness: 400, damping: 10 }}
         >
           <Link href="/" className="flex items-center space-x-2 ml-4 md:ml-0">
-            <Film className="h-6 w-6 text-yellow-500" />
-            <span className="font-bold text-xl">BuzzPlay</span>
+            <img src="/images/logo.png" alt="Logo" className="h-10 w-10" />
+            <span className="font-normal text-4xl" style={{ fontFamily: 'SequelSansBlack' }}>
+              <span style={{ fontFamily: 'SequelSansBlack' }} className="text-white tracking-wider">Buzz</span>
+              <span style={{ fontFamily: 'SequelSansBlack' }} className="text-cyan tracking-wider">Play</span>
+            </span>
           </Link>
         </motion.div>
         <div className="mx-6">
