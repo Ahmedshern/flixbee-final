@@ -122,22 +122,33 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            className="space-x-4"
+            className="flex flex-col sm:flex-row gap-4 sm:space-x-4"
           >
-            <Button asChild size="lg" className="hover:scale-105 transition-transform">
+            <Button 
+              asChild 
+              size="lg" 
+              className="hover:scale-105 transition-transform w-full sm:w-auto"
+            >
               <Link href="/register">Get Started</Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="hover:scale-105 transition-transform">
-              <Link href="/pricing">View Plans</Link>
-            </Button>
+            
             <Button 
               asChild 
               size="lg" 
               variant="outline" 
-              className="hover:scale-105 transition-transform"
+              className="hover:scale-105 transition-transform w-full sm:w-auto"
+            >
+              <Link href="/pricing">View Plans</Link>
+            </Button>
+            
+            <Button 
+              asChild 
+              size="lg" 
+              variant="outline" 
+              className="hover:scale-105 transition-transform w-full sm:w-auto"
             >
               <Link 
-                href="https://t.me/your_telegram_username" 
+                href="https://t.me/buzzplaymv" 
                 target="_blank" 
                 rel="noopener noreferrer"
               >

@@ -10,14 +10,16 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { Film, Loader2 } from "lucide-react";
-import { createEmbyUser, updateEmbyUserPolicy } from "@/lib/emby";
+import { Film, Loader2, Eye, EyeOff } from "lucide-react";
+import { createEmbyUser } from "@/lib/emby";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -26,43 +28,74 @@ export default function RegisterPage() {
     
     if (password !== confirmPassword) {
       toast({
+        title: "Passwords don't match",
+        description: "Please make sure your passwords match.",
         variant: "destructive",
-        title: "Error",
-        description: "Passwords do not match",
       });
       return;
     }
 
-    setLoading(true);
+    let firebaseUser = null;
 
     try {
+      setLoading(true);
+
       // Create Firebase user
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      firebaseUser = userCredential.user;
 
-      // Create Emby user (disabled by default)
-      const embyUser = await createEmbyUser(email, password);
-      await updateEmbyUserPolicy(embyUser.Id, false);
+      // Create Emby user
+      const embyResponse = await fetch('/api/emby/create-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-      // Create user document in Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        email: user.email,
-        createdAt: new Date().toISOString(),
+      const embyData = await embyResponse.json();
+
+      if (!embyResponse.ok) {
+        // If Emby creation fails, delete the Firebase user
+        if (firebaseUser) {
+          await firebaseUser.delete();
+        }
+        throw new Error(embyData.details || embyData.error || 'Failed to create streaming account');
+      }
+
+      // Create Firestore document
+      await setDoc(doc(db, "users", firebaseUser.uid), {
+        email: firebaseUser.email,
+        embyUserId: embyData.Id,
         subscriptionStatus: "inactive",
         subscriptionEnd: null,
-        embyUserId: embyUser.Id,
+        plan: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+
+      toast({
+        title: "Account created successfully!",
+        description: "Welcome to BuzzPlay. Redirecting to dashboard...",
       });
 
       router.push("/dashboard");
-      toast({
-        title: "Account created!",
-        description: "Welcome to BuzzPlay. Let's get you started with a subscription.",
-      });
     } catch (error: any) {
+      console.error("Registration error:", error);
+      
+      // Clean up Firebase user if it exists and there was an error
+      if (firebaseUser) {
+        try {
+          await firebaseUser.delete();
+        } catch (deleteError) {
+          console.error("Error deleting Firebase user:", deleteError);
+        }
+      }
+
       toast({
+        title: "Registration failed",
+        description: error.message || "Something went wrong. Please try again.",
         variant: "destructive",
-        title: "Error",
-        description: error.message,
       });
     } finally {
       setLoading(false);
@@ -92,23 +125,61 @@ export default function RegisterPage() {
                 required
               />
             </div>
-            <div className="space-y-2">
-              <Input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+            <div className="space-y-2 relative">
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pr-10"
+                  required
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                  <span className="sr-only">
+                    {showPassword ? "Hide password" : "Show password"}
+                  </span>
+                </Button>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Input
-                type="password"
-                placeholder="Confirm Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
+            <div className="space-y-2 relative">
+              <div className="relative">
+                <Input
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="pr-10"
+                  required
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                  <span className="sr-only">
+                    {showConfirmPassword ? "Hide password" : "Show password"}
+                  </span>
+                </Button>
+              </div>
             </div>
             <Button className="w-full" type="submit" disabled={loading}>
               {loading ? (

@@ -6,22 +6,18 @@ interface EmbyUser {
   Id: string;
 }
 
-export async function createEmbyUser(username: string, password: string) {
+export async function createEmbyUser(email: string, password: string) {
   try {
-    const response = await fetch(`${EMBY_SERVER_URL}/Users/New`, {
+    const response = await fetch('/api/emby/create-user', {
       method: 'POST',
       headers: {
-        'X-Emby-Token': EMBY_API_KEY ?? '',
         'Content-Type': 'application/json',
-      } as HeadersInit,
-      body: JSON.stringify({
-        Name: username,
-        Password: password,
-      }),
+      },
+      body: JSON.stringify({ email, password }),
     });
 
     if (!response.ok) {
-      throw new Error('Failed to create Emby user');
+      throw new Error('Failed to create streaming account');
     }
 
     return await response.json();
