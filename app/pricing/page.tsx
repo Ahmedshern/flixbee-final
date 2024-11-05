@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
@@ -7,63 +8,85 @@ import { useAuthContext } from "@/components/auth-provider";
 import { useRouter } from "next/navigation";
 import { AnimatedEntrance } from "@/components/ui/animated-entrance";
 import { motion } from "framer-motion";
-import { Metadata } from 'next';
 
 const plans = [
   {
     name: "Basic",
-    price: "154",
+    price: 149,
     description: "1 Month Package",
     features: [
-      "Full content library access",
-      "HD streaming quality",
-      "Watch on 2 devices",
-      "Priority support",
-      "Offline downloads",
-      "No ads",
-      "1 month access",
+      "Unlimited Movies & TV Shows",
+      "Ad-Free Streaming",
+      "Watch on 2 Devices Simultaneously",
+      "Full HD Streaming",
+      "Personalized Watchlist",
+      "Parental Controls",
     ],
+    specialOffers: {
+      3: 144,
+      6: 139,
+    },
+  },
+  {
+    name: "Standard",
+    price: 179,
+    description: "1 Month Package",
+    features: [
+      "Unlimited Movies & TV Shows",
+      "Ad-Free Streaming",
+      "Watch on 3 Devices Simultaneously",
+      "Full HD Streaming",
+      "Personalized Watchlist",
+      "Offline Viewing",
+      "Parental Controls",
+    ],
+    specialOffers: {
+      3: 174,
+      6: 169,
+    },
   },
   {
     name: "Premium",
-    price: "449",
-    description: "3 Months Package",
+    price: 219,
+    description: "1 Month Package",
     features: [
-      "Full content library access",
-      "HD streaming quality",
-      "Watch on 2 devices",
-      "Priority support",
-      "Offline downloads",
-      "No ads",
-      "3 months access",
+      "Unlimited Movies & TV Shows",
+      "Ad-Free Streaming",
+      "Watch on 4 Devices Simultaneously",
+      "Full HD Streaming",
+      "Personalized Watchlist",
+      "Offline Viewing",
+      "Parental Controls",
     ],
-  },
-  {
-    name: "Family",
-    price: "799",
-    description: "6 Months Package",
-    features: [
-      "Full content library access",
-      "HD streaming quality",
-      "Watch on 2 devices",
-      "Priority support",
-      "Offline downloads",
-      "No ads",
-      "6 months access",
-    ],
+    specialOffers: {
+      3: 214,
+      6: 209,
+    },
   },
 ];
+
+type SelectedDurations = {
+  [key: string]: number;
+};
 
 export default function PricingPage() {
   const { user } = useAuthContext();
   const router = useRouter();
+  const [selectedDurations, setSelectedDurations] = useState<SelectedDurations>(
+    plans.reduce((acc, plan) => ({ ...acc, [plan.name]: 1 }), {} as SelectedDurations)
+  );
 
   const handleSubscribe = (planName: string) => {
     if (!user) {
       router.push("/register");
       return;
     }
-    router.push(`/checkout?plan=${planName.toLowerCase()}`);
+    const duration = selectedDurations[planName];
+    router.push(`/checkout?plan=${planName.toLowerCase()}&duration=${duration}`);
+  };
+
+  const handleDurationChange = (planName: string, duration: number) => {
+    setSelectedDurations((prev) => ({ ...prev, [planName]: duration }));
   };
 
   return (
@@ -80,69 +103,89 @@ export default function PricingPage() {
       <div className="container relative py-8 px-4 md:py-16 md:px-8">
         <AnimatedEntrance>
           <div className="text-center mb-8 md:mb-16">
-            <h1 className="text-3xl md:text-5xl font-bold mb-4 font-display">Choose Your Plan</h1>
-            <p className="text-muted-foreground max-w-2xl mx-auto text-sm md:text-base">
+            <h1 className="text-4xl md:text-6xl font-bold mb-4 font-display text-gray-900 dark:text-white">Choose Your Plan</h1>
+            <p className="text-gray-700 dark:text-gray-300 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
               Select the perfect plan for your entertainment needs. All plans include access to our streaming platform and can be cancelled anytime.
             </p>
           </div>
         </AnimatedEntrance>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8 max-w-7xl mx-auto">
-          {plans.map((plan, index) => (
-            <AnimatedEntrance key={plan.name} delay={index * 0.2}>
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                className="h-full"
-              >
-                <Card className={`flex flex-col h-full border-2 min-h-[600px] backdrop-blur-sm bg-background/60 ${
-                  plan.name === "Premium" 
-                    ? "border-primary shadow-lg relative bg-muted/50" 
-                    : "hover:border-primary"
-                  } transition-all`}>
-                  {plan.name === "Premium" && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
-                        Most Popular
-                      </span>
-                    </div>
-                  )}
-                  <CardHeader className="text-center pt-8 flex-none">
-                    <CardTitle className="text-2xl md:text-3xl mb-2">{plan.name}</CardTitle>
-                    <CardDescription className="text-base mb-4">{plan.description}</CardDescription>
-                    <div className="mb-4">
-                      <div className="flex items-baseline justify-center">
-                        <span className="text-4xl md:text-5xl font-bold">MVR {plan.price}</span>
+          {plans.map((plan, index) => {
+            const duration = selectedDurations[plan.name];
+            const monthlyPrice = duration === 1 ? plan.price : plan.specialOffers[duration as keyof typeof plan.specialOffers];
+            const totalPrice = monthlyPrice * duration;
+
+            return (
+              <AnimatedEntrance key={plan.name} delay={index * 0.2}>
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                  className="h-full"
+                >
+                  <Card className={`flex flex-col h-full border-2 min-h-[600px] backdrop-blur-sm bg-background/60 ${
+                    plan.name === "Premium" 
+                      ? "border-primary shadow-lg relative bg-muted/50" 
+                      : "hover:border-primary"
+                    } transition-all`}>
+                    {plan.name === "Premium" && (
+                      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                        <span className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
+                          Most Popular
+                        </span>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="flex-1">
-                    <ul className="space-y-4 text-sm md:text-base">
-                      {plan.features.map((feature) => (
-                        <li key={feature} className="flex items-start">
-                          <Check className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                  <CardFooter className="pt-4 pb-8 flex-none">
-                    <Button 
-                      className="w-full h-12 text-base"
-                      onClick={() => handleSubscribe(plan.name)}
-                      variant={plan.name === "Premium" ? "default" : "outline"}
-                      size="lg"
-                    >
-                      {user ? "Subscribe Now" : "Get Started"}
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </motion.div>
-            </AnimatedEntrance>
-          ))}
+                    )}
+                    <CardHeader className="text-center pt-8 flex-none">
+                      <CardTitle className="text-2xl md:text-3xl mb-2 font-semibold text-gray-900 dark:text-white">{plan.name}</CardTitle>
+                      <CardDescription className="text-base mb-4 text-gray-700 dark:text-gray-300">{plan.description}</CardDescription>
+                      <div className="mb-4">
+                        <div className="flex items-baseline justify-center">
+                          <span className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white">MVR {totalPrice}</span>
+                        </div>
+                        <div className="mt-2 flex justify-center space-x-2">
+                          {[1, 3, 6].map((option) => (
+                            <button
+                              key={option}
+                              onClick={() => handleDurationChange(plan.name, option)}
+                              className={`px-3 py-1 rounded ${
+                                duration === option 
+                                  ? "bg-green-500 text-white"
+                                  : "bg-gray-300 text-gray-900 dark:bg-gray-700 dark:text-white"
+                              }`}
+                            >
+                              {option} Month{option > 1 ? "s" : ""}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="flex-1">
+                      <ul className="space-y-4 text-sm md:text-base text-gray-700 dark:text-gray-300">
+                        {plan.features.map((feature) => (
+                          <li key={feature} className="flex items-start">
+                            <Check className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                    <CardFooter className="pt-4 pb-8 flex-none">
+                      <Button 
+                        className="w-full h-12 text-base"
+                        onClick={() => handleSubscribe(plan.name)}
+                        variant={plan.name === "Premium" ? "default" : "outline"}
+                        size="lg"
+                      >
+                        {user ? "Subscribe Now" : "Get Started"}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </motion.div>
+              </AnimatedEntrance>
+            );
+          })}
         </div>
       </div>
     </div>
   );
 }
-;
