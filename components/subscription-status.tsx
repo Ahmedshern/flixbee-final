@@ -11,6 +11,7 @@ interface SubscriptionStatusProps {
     subscriptionStatus: string;
     subscriptionEnd: string | null;
     plan?: string;
+    duration?: number;
   } | null;
 }
 
@@ -37,7 +38,7 @@ export function SubscriptionStatus({ userData }: SubscriptionStatusProps) {
               <CheckCircle2 className="h-4 w-4" />
               <AlertTitle>Active Subscription</AlertTitle>
               <AlertDescription>
-                Your {userData.plan} subscription is active until {subscriptionEnd}
+                Your {userData.duration}-month {userData.plan} subscription is active until {subscriptionEnd}
               </AlertDescription>
             </Alert>
             <Button variant="outline" asChild>

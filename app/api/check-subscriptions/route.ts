@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { handleSubscriptionExpiration } from "@/lib/subscription";
+import { sendExpirationNotification } from "@/lib/services/notification";
 
 export async function GET() {
   try {
@@ -19,6 +20,7 @@ export async function GET() {
       const userData = doc.data();
       if (userData.embyUserId) {
         await handleSubscriptionExpiration(doc.id, userData.embyUserId);
+        await sendExpirationNotification(userData.email, userData.duration);
       }
     });
 

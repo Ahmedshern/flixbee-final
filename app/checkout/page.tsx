@@ -14,11 +14,12 @@ import { db, storage } from "@/lib/firebase";
 import { useAuthContext } from "@/components/auth-provider";
 import { useRouter } from "next/navigation";
 import { Loader2, Upload } from "lucide-react";
-import { updateEmbyUserPolicy } from "@/lib/subscription";
+import { activateSubscription } from "@/lib/subscription";
 
 function CheckoutPageContent() {
   const searchParams = useSearchParams();
   const plan = searchParams.get("plan");
+  const duration = parseInt(searchParams.get("duration") || "1");
   const { user } = useAuthContext();
   const router = useRouter();
   const { toast } = useToast();
@@ -49,24 +50,12 @@ function CheckoutPageContent() {
       const receiptRef = ref(storage, `receipts/${user.uid}/${Date.now()}_${receipt.name}`);
       await uploadBytes(receiptRef, receipt);
 
-      // Update subscription status and activate Emby account
-      const subscriptionEnd = new Date();
-      subscriptionEnd.setDate(subscriptionEnd.getDate() + 30);
-
-      // Update Firestore subscription status
-      await updateDoc(doc(db, "users", user.uid), {
-        subscriptionStatus: "active",
-        subscriptionEnd: subscriptionEnd.toISOString(),
-        plan: plan,
-        lastPayment: new Date().toISOString(),
-      });
-
-      // Enable Emby user access
-      await updateEmbyUserPolicy(userData.embyUserId, true);
+      // Activate subscription with duration
+      await activateSubscription(user.uid, userData.embyUserId, plan!, duration);
 
       toast({
         title: "Subscription activated!",
-        description: "Your account has been activated and you can now start streaming.",
+        description: `Your ${duration}-month subscription has been activated.`,
       });
 
       router.push("/dashboard");

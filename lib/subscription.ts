@@ -20,16 +20,19 @@ export async function handleSubscriptionExpiration(userId: string, embyUserId: s
   }
 }
 
-export async function activateSubscription(userId: string, embyUserId: string, plan: string) {
+export async function activateSubscription(userId: string, embyUserId: string, plan: string, duration: number) {
   try {
     const subscriptionEnd = new Date();
-    subscriptionEnd.setDate(subscriptionEnd.getDate() + 30);
+    // Calculate end date based on selected duration (in months)
+    subscriptionEnd.setMonth(subscriptionEnd.getMonth() + duration);
 
     // Update Firestore subscription status
     await updateDoc(doc(db, "users", userId), {
       subscriptionStatus: "active",
       subscriptionEnd: subscriptionEnd.toISOString(),
       plan: plan,
+      duration: duration, // Store the duration for reference
+      lastPayment: new Date().toISOString(),
     });
 
     // Enable Emby user access
