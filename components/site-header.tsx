@@ -163,13 +163,16 @@ export function SiteHeader() {
           whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 400, damping: 10 }}
         >
-          <Link href="/" className="flex items-center space-x-1 ml-2 md:ml-0">
+          <Link href="/" className="flex items-center space-x-2 sm:space-x-3 ml-2 md:ml-0">
             <img 
               src="./images/logo.svg" 
               alt="BuzzPlay Logo" 
-              className="h-15 w-15 md:h-16 md:w-16" 
+              className="h-10 w-10 sm:h-12 sm:w-12 md:h-16 md:w-16" 
             />
-            <span className="font-bold text-3xl md:text-5xl" style={{ fontFamily: 'SequelSansBlack' }}>
+            <span 
+              className="font-bold text-2xl sm:text-3xl md:text-5xl" 
+              style={{ fontFamily: 'SequelSansBlack' }}
+            >
               <span className="text-black dark:text-white">Buzz</span>
               <span className="text-cyan">Play</span>
             </span>
