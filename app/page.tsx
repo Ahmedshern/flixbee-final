@@ -50,32 +50,17 @@ function useMovieBackgrounds() {
 export default function Home() {
   const { currentBackground, isLoading } = useMovieBackgrounds();
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "BuzzPlayy",
-    "url": "https://BuzzPlay.com",
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": "https://BuzzPlay.com/search?q={search_term_string}",
-      "query-input": "required name=search_term_string"
-    },
-    "sameAs": [
-      "https://twitter.com/BuzzPlay",
-      "https://facebook.com/BuzzPlay",
-      "https://instagram.com/BuzzPlay"
-    ]
-  };
-
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)] w-full">
-      <section className="space-y-6 pb-0 pt-6 md:pb-0 md:pt-10 lg:py-32 relative overflow-hidden min-h-[80vh] lg:min-h-[90vh] flex items-center w-full">
+    <main className="flex min-h-screen flex-col">
+      {/* Hero Section - Full Viewport Height */}
+      <div className="relative flex flex-1 flex-col items-center justify-center text-center px-4 min-h-screen">
+        {/* Movie Background */}
         <AnimatePresence mode="wait">
           {!isLoading && (
             <motion.div
               key={currentBackground}
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.15 }}
+              animate={{ opacity: 0.3 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 1 }}
               className="absolute inset-0"
@@ -89,143 +74,83 @@ export default function Home() {
             />
           )}
         </AnimatePresence>
-        
-        <div className="container flex max-w-[64rem] flex-col items-center gap-4 text-center relative">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="font-bold text-3xl sm:text-5xl md:text-6xl lg:text-7xl"
-          >
-            Your Entertainment,{" "}
-            <span className="text-yellow-500 relative">
-              Unleashed
-              <motion.div
-                className="absolute bottom-0 left-0 h-1 bg-yellow-500"
-                initial={{ width: 0 }}
-                animate={{ width: "100%" }}
-                transition={{ delay: 0.5, duration: 0.8 }}
-              />
-            </span>
-          </motion.h1>
+
+        {/* Glassmorphism Container */}
+        <div className="relative max-w-4xl mx-auto p-8 rounded-xl backdrop-blur-md bg-white/10 dark:bg-black/10 border border-white/20 dark:border-white/10 shadow-xl">
+          <h1 className="text-4xl font-bold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
+            <span className="text-black dark:text-white">Your Entertainment,</span>
+            <br />
+            <span className="text-emerald-500 underline decoration-emerald-500/50">Unleashed</span>
+          </h1>
           
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8"
-          >
-            Stream unlimited movies, TV shows, and more. Start watching today with BuzzPlay.
-          </motion.p>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-            className="flex flex-col sm:flex-row gap-4 sm:space-x-4"
-          >
-            <Button 
-              asChild 
-              size="lg" 
-              className="hover:scale-105 transition-transform w-full sm:w-auto"
-            >
+          <p className="mt-6 text-lg text-white">
+            Stream unlimited movies, TV shows, and more. Start watching today
+            with BuzzPlay.
+          </p>
+
+          <div className="mt-8 flex flex-wrap justify-center gap-4">
+            <Button asChild size="lg" className="bg-emerald-500 hover:bg-emerald-600">
               <Link href="/register">Get Started</Link>
             </Button>
-            
-            <Button 
-              asChild 
-              size="lg" 
-              variant="outline" 
-              className="hover:scale-105 transition-transform w-full sm:w-auto"
-            >
+            <Button asChild size="lg" variant="outline">
               <Link href="/pricing">View Plans</Link>
             </Button>
-            
-            <Button 
-              asChild 
-              size="lg" 
-              variant="outline" 
-              className="hover:scale-105 transition-transform w-full sm:w-auto"
-            >
-              <Link 
-                href="https://t.me/buzzplaymv" 
-                target="_blank" 
-                rel="noopener noreferrer"
-              >
-                <MessageCircle className="mr-2 h-4 w-4" />
-                Contact Us
-              </Link>
+            <Button asChild size="lg" variant="outline">
+              <Link href="/contact">Contact Us</Link>
             </Button>
-          </motion.div>
-        </div>
-      </section>
-      
-      <AnimatedEntrance delay={0.6}>
-        <section className="w-full py-0 md:py-0 lg:py-0 relative">
-          <div 
-            className="absolute inset-0" 
-            style={{
-              backgroundImage: `
-                linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.8)),
-                radial-gradient(circle at top left, rgba(59, 130, 246, 0.4), transparent 50%),
-                radial-gradient(circle at bottom right, rgba(234, 179, 8, 0.4), transparent 50%),
-                radial-gradient(circle at center, rgba(147, 51, 234, 0.3), transparent 70%)
-              `,
-              backgroundSize: 'cover',
-              backgroundColor: 'transparent',
-              opacity: '1',
-              mixBlendMode: 'normal',
-            }}
-          />
-          
-          <div className="container mx-auto grid justify-center gap-6 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3 relative z-10 pt-12 pb-24">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            >
-              <Card className="h-full bg-white/5 backdrop-blur-md border-white/10 hover:border-yellow-500/50 transition-all shadow-xl">
-                <CardContent className="flex flex-col items-center justify-center p-6">
-                  <Play className="h-12 w-12 mb-4 text-yellow-500" />
-                  <h3 className="font-semibold text-lg text-yellow-50">Instant Streaming</h3>
-                  <p className="text-sm text-zinc-300 text-center">
-                    Watch instantly on any device
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            >
-              <Card className="h-full bg-white/5 backdrop-blur-md border-white/10 hover:border-yellow-500/50 transition-all shadow-xl">
-                <CardContent className="flex flex-col items-center justify-center p-6">
-                  <Film className="h-12 w-12 mb-4 text-yellow-500" />
-                  <h3 className="font-semibold text-lg text-yellow-50">Latest Movies</h3>
-                  <p className="text-sm text-zinc-300 text-center">
-                    New releases every week
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            >
-              <Card className="h-full bg-white/5 backdrop-blur-md border-white/10 hover:border-yellow-500/50 transition-all shadow-xl">
-                <CardContent className="flex flex-col items-center justify-center p-6">
-                  <Tv2 className="h-12 w-12 mb-4 text-yellow-500" />
-                  <h3 className="font-semibold text-lg text-yellow-50">TV Shows</h3>
-                  <p className="text-sm text-zinc-300 text-center">
-                    Binge-worthy series
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
           </div>
-        </section>
-      </AnimatedEntrance>
-    </div>
+        </div>
+      </div>
+
+      {/* Features Section */}
+      <div className="relative z-10 py-24" 
+           style={{ 
+             backgroundImage: 'url(/images/features-bg.png)',
+             backgroundSize: 'cover',
+             backgroundPosition: 'center',
+             backgroundRepeat: 'no-repeat',
+             opacity: 0.9
+           }}>
+        <div className="container px-4 md:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Instant Streaming */}
+            <div className="group relative overflow-hidden rounded-xl backdrop-blur-md bg-black/30 border border-white/10 p-8 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 hover:bg-white/10">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative z-10">
+                <Play className="w-12 h-12 mb-4 text-emerald-500 group-hover:scale-110 transition-transform" />
+                <h3 className="text-xl font-semibold mb-2 text-white">Instant Streaming</h3>
+                <p className="text-gray-400 group-hover:text-gray-300 transition-colors">
+                  Watch instantly on any device
+                </p>
+              </div>
+            </div>
+
+            {/* Latest Movies */}
+            <div className="group relative overflow-hidden rounded-xl backdrop-blur-md bg-black/30 border border-white/10 p-8 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 hover:bg-white/10">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative z-10">
+                <Film className="w-12 h-12 mb-4 text-emerald-500 group-hover:scale-110 transition-transform" />
+                <h3 className="text-xl font-semibold mb-2 text-white">Latest Movies</h3>
+                <p className="text-gray-400 group-hover:text-gray-300 transition-colors">
+                  New releases every week
+                </p>
+              </div>
+            </div>
+
+            {/* TV Shows */}
+            <div className="group relative overflow-hidden rounded-xl backdrop-blur-md bg-black/30 border border-white/10 p-8 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 hover:bg-white/10">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative z-10">
+                <Tv2 className="w-12 h-12 mb-4 text-emerald-500 group-hover:scale-110 transition-transform" />
+                <h3 className="text-xl font-semibold mb-2 text-white">TV Shows</h3>
+                <p className="text-gray-400 group-hover:text-gray-300 transition-colors">
+                  Binge-worthy series
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
   );
 }

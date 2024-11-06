@@ -123,7 +123,7 @@ export default function PricingPage() {
                   transition={{ type: "spring", stiffness: 400, damping: 10 }}
                   className="h-full"
                 >
-                  <Card className={`flex flex-col h-full border-2 min-h-[600px] backdrop-blur-sm bg-background/60 ${
+                  <Card className={`flex flex-col h-full border-2 min-h-[600px]  bg-background/60 ${
                     plan.name === "Premium" 
                       ? "border-primary shadow-lg relative bg-muted/50" 
                       : "hover:border-primary"

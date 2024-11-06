@@ -32,7 +32,7 @@ const MainNav = () => {
   const pathname = usePathname();
   
   return (
-    <NavigationMenu className="hidden md:flex">
+    <NavigationMenu className="hidden md:flex ml-auto mr-4">
       <NavigationMenuList>
         <NavigationMenuItem>
           <Link href="/pricing" legacyBehavior passHref>
@@ -152,18 +152,15 @@ export function SiteHeader() {
           transition={{ type: "spring", stiffness: 400, damping: 10 }}
         >
           <Link href="/" className="flex items-center space-x-2 ml-4 md:ml-0">
-            <img src="/images/logo.png" alt="Logo" className="h-10 w-10" />
-            <span className="font-normal text-4xl" style={{ fontFamily: 'SequelSansBlack' }}>
-              <span style={{ fontFamily: 'SequelSansBlack' }} className="text-white tracking-wider">Buzz</span>
-              <span style={{ fontFamily: 'SequelSansBlack' }} className="text-cyan tracking-wider">Play</span>
+            <img src="/images/logo.png" alt="Logo" className="h-6 w-6" />
+            <span className="font-bold text-4xl" style={{ fontFamily: 'SequelSansBlack' }}>
+              <span className="text-black dark:text-white">Buzz</span>
+              <span className="text-cyan">Play</span>
             </span>
           </Link>
         </motion.div>
-        <div className="mx-6">
-          <MainNav />
-        </div>
-        <div className="ml-auto flex items-center space-x-4">
-          <ThemeToggle />
+        
+        <div className="flex items-center ml-auto">
           <AnimatedEntrance className="hidden md:flex items-center space-x-4">
             {user ? (
               <Button asChild>
@@ -171,11 +168,14 @@ export function SiteHeader() {
               </Button>
             ) : (
               <>
-                <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-primary">
+                <Link href="/pricing" className="text-sm font-medium text-muted-foreground hover:text-cyan">
+                  Pricing
+                </Link>
+                <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-cyan">
                   Login
                 </Link>
                 <Button asChild>
-                  <Link href="/register">Get Started</Link>
+                  <Link href="/register" className="bg-cyan hover:bg-cyan/70">Get Started</Link>
                 </Button>
               </>
             )}
