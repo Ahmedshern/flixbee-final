@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useMemo } from "react";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,16 +15,29 @@ import { useAuthContext } from "@/components/auth-provider";
 import { useRouter } from "next/navigation";
 import { Loader2, Upload } from "lucide-react";
 import { activateSubscription } from "@/lib/subscription";
+import { plans } from "@/lib/config/plans";
 
 function CheckoutPageContent() {
   const searchParams = useSearchParams();
-  const plan = searchParams.get("plan");
+  const planName = searchParams.get("plan");
   const duration = parseInt(searchParams.get("duration") || "1");
   const { user } = useAuthContext();
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [receipt, setReceipt] = useState<File | null>(null);
+
+  // Calculate total price
+  const totalPrice = useMemo(() => {
+    const selectedPlan = plans.find(p => p.name.toLowerCase() === planName);
+    if (!selectedPlan) return 0;
+
+    const pricePerMonth = duration > 1 
+      ? selectedPlan.specialOffers[duration as keyof typeof selectedPlan.specialOffers] 
+      : selectedPlan.price;
+
+    return pricePerMonth * duration;
+  }, [planName, duration]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -51,15 +64,22 @@ function CheckoutPageContent() {
       await uploadBytes(receiptRef, receipt);
 
       // Activate subscription with duration
-      await activateSubscription(user.uid, userData.embyUserId, plan!, duration);
+      await activateSubscription(
+        user.uid, 
+        userData.embyUserId, 
+        planName!, 
+        duration,
+        totalPrice
+      );
 
       toast({
         title: "Subscription activated!",
-        description: `Your ${duration}-month subscription has been activated.`,
+        description: `Your ${duration}-month ${planName} subscription has been activated.`,
       });
 
       router.push("/dashboard");
     } catch (error) {
+      console.error("Error processing subscription:", error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -80,10 +100,26 @@ function CheckoutPageContent() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Order Summary */}
+          <div className="mb-6 space-y-2 p-4 rounded-lg bg-black/20 backdrop-blur-sm border border-white/10">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Plan</span>
+              <span className="font-medium capitalize">{planName}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Duration</span>
+              <span className="font-medium">{duration} {duration === 1 ? 'month' : 'months'}</span>
+            </div>
+            <div className="pt-2 border-t border-white/10 flex justify-between items-center">
+              <span className="font-medium">Total Amount</span>
+              <span className="text-lg font-bold text-emerald-400">MVR {totalPrice.toFixed(2)}</span>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <h3 className="text-lg font-medium">Bank Transfer Details</h3>
-              <div className="rounded-md bg-secondary p-4">
+              <div className="rounded-md bg-cyan/60 p-4">
                 <p>Bank: Bank of Maldives</p>
                 <p>Account Name: BuzzPlay Entertainment</p>
                 <p>Account Number: 7730000123456</p>
@@ -102,7 +138,11 @@ function CheckoutPageContent() {
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading || !receipt}>
+            <Button 
+              type="submit" 
+              className="w-full bg-cyan hover:bg-cyan/70" 
+              disabled={loading || !receipt}
+            >
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

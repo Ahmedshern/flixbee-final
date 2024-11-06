@@ -15,6 +15,7 @@ interface UserData {
   subscriptionStatus: string;
   subscriptionEnd: string | null;
   plan?: string;
+  duration?: number;
 }
 
 export default function DashboardPage() {
@@ -54,20 +55,72 @@ export default function DashboardPage() {
   return (
     <>
       <DashboardHeader />
-      <div 
-        className="fixed inset-0 -z-10"
-        style={{
-          backgroundImage: `
-            radial-gradient(circle at 50% 50%, rgba(30, 58, 138, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 100% 100%, rgba(147, 51, 234, 0.1) 0%, transparent 50%)
-          `,
-          backgroundColor: '#030712',
-        }}
-      />
       <div className="container py-4 px-4 md:py-8 md:px-8">
         <div className="grid gap-4 md:gap-8">
           <SubscriptionStatus userData={userData} />
+
+          {/* Instructions Card */}
+          <Card className="backdrop-blur-sm bg-black/40 border-zinc-800">
+            <CardHeader>
+              <CardTitle className="text-lg md:text-xl">Installation Instructions</CardTitle>
+              <CardDescription>Follow these steps to start watching</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Steps */}
+              <div className="space-y-4">
+                <h3 className="font-medium text-sm text-muted-foreground">Step by Step Guide:</h3>
+                <ol className="space-y-3 text-sm">
+                  <li>1. Install Emby</li>
+                  <li>2. Press "Next"</li>
+                  <li>3. Press "Skip"</li>
+                  <li>4. Add Host & Port</li>
+                </ol>
+                <div className="space-y-2">
+                  <p className="text-sm">
+                    <span className="font-medium">Host:</span>{" "}
+                    <span className="text-muted-foreground">https://www.buzzplay.pw</span>
+                  </p>
+                  <p className="text-sm">
+                    <span className="font-medium">Port:</span>{" "}
+                    <span className="text-muted-foreground">443</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Warning */}
+              <div className="text-red-500 text-sm">
+                <p>Read this before installing Emby on iOS</p>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  If you see a message asking to pay for Emby premiere on iOS and Apple TV app 
+                  you will have to pay a one time unlock fee of 5 USD. We don't collect that. 
+                  It's collected by Emby via Apple's Appstore or Google Playstore's in-app purchase.
+                </p>
+              </div>
+
+              <div className="text-muted-foreground text-sm">
+                You can always stream via Safari or any other browser via https://www.buzzplay.pw
+              </div>
+
+              {/* App Buttons */}
+              <div className="space-y-3 pt-2">
+                <Button className="w-full bg-green-500 hover:bg-green-600" asChild>
+                  <Link href="https://apps.apple.com/app/emby/id992180193" target="_blank">
+                    iOS
+                  </Link>
+                </Button>
+                <Button className="w-full bg-emerald-500 hover:bg-emerald-600" asChild>
+                  <Link href="https://play.google.com/store/apps/details?id=tv.emby.embyatv" target="_blank">
+                    Android
+                  </Link>
+                </Button>
+                <Button className="w-full bg-lime-600 hover:bg-lime-700" asChild>
+                  <Link href="https://www.buzzplay.pw" target="_blank">
+                    Watch on web
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
           <div className="grid gap-4 md:gap-8 md:grid-cols-2">
             <Card className="backdrop-blur-sm bg-black/40 border-zinc-800">

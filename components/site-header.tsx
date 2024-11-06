@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -24,9 +24,11 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useAuthContext } from "@/components/auth-provider";
-import { Film, Menu, CreditCard, LayoutDashboard, LogIn, UserPlus } from "lucide-react";
+import { Film, Menu, CreditCard, LayoutDashboard, LogIn, UserPlus, LogOut } from "lucide-react";
 import { motion } from "framer-motion";
 import { AnimatedEntrance } from "@/components/ui/animated-entrance";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 const MainNav = () => {
   const pathname = usePathname();
@@ -137,6 +139,16 @@ const MobileNav = () => {
 
 export function SiteHeader() {
   const { user } = useAuthContext();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      router.push("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   return (
     <motion.header
@@ -151,9 +163,13 @@ export function SiteHeader() {
           whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 400, damping: 10 }}
         >
-          <Link href="/" className="flex items-center space-x-2 ml-4 md:ml-0">
-            <img src="/images/logo.png" alt="Logo" className="h-6 w-6" />
-            <span className="font-bold text-4xl" style={{ fontFamily: 'SequelSansBlack' }}>
+          <Link href="/" className="flex items-center space-x-1 ml-2 md:ml-0">
+            <img 
+              src="./images/logo.svg" 
+              alt="BuzzPlay Logo" 
+              className="h-15 w-15 md:h-16 md:w-16" 
+            />
+            <span className="font-bold text-3xl md:text-5xl" style={{ fontFamily: 'SequelSansBlack' }}>
               <span className="text-black dark:text-white">Buzz</span>
               <span className="text-cyan">Play</span>
             </span>
@@ -163,13 +179,28 @@ export function SiteHeader() {
         <div className="flex items-center ml-auto">
           <AnimatedEntrance className="hidden md:flex items-center space-x-4">
             {user ? (
-              <Button asChild>
-                <Link href="/dashboard">Dashboard</Link>
-              </Button>
+              <>
+                <Button asChild className="bg-cyan hover:bg-cyan/70">
+                  <Link href="/dashboard">Dashboard</Link>
+                </Button>
+                <Link href="/faq" className="text-sm font-medium text-muted-foreground hover:text-cyan">
+                  FAQ
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="text-sm font-medium text-muted-foreground hover:text-cyan flex items-center gap-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign out
+                </button>
+              </>
             ) : (
               <>
                 <Link href="/pricing" className="text-sm font-medium text-muted-foreground hover:text-cyan">
                   Pricing
+                </Link>
+                <Link href="/faq" className="text-sm font-medium text-muted-foreground hover:text-cyan">
+                  FAQ
                 </Link>
                 <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-cyan">
                   Login

@@ -113,38 +113,38 @@ export default function Home() {
            }}>
         <div className="container px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Instant Streaming */}
+            {/* Stream on Any Device */}
             <div className="group relative overflow-hidden rounded-xl backdrop-blur-md bg-black/30 border border-white/10 p-8 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 hover:bg-white/10">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative z-10">
                 <Play className="w-12 h-12 mb-4 text-emerald-500 group-hover:scale-110 transition-transform" />
-                <h3 className="text-xl font-semibold mb-2 text-white">Instant Streaming</h3>
+                <h3 className="text-xl font-semibold mb-2 text-white">Stream on Any Device</h3>
                 <p className="text-gray-400 group-hover:text-gray-300 transition-colors">
-                  Watch instantly on any device
+                  BuzzPlay makes it easy to watch on almost any device—whether you're on iOS, macOS, Android, or using a web browser. Stream seamlessly on your favorite device, anytime, anywhere.
                 </p>
               </div>
             </div>
 
-            {/* Latest Movies */}
+            {/* Explore Our Library */}
             <div className="group relative overflow-hidden rounded-xl backdrop-blur-md bg-black/30 border border-white/10 p-8 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 hover:bg-white/10">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative z-10">
                 <Film className="w-12 h-12 mb-4 text-emerald-500 group-hover:scale-110 transition-transform" />
-                <h3 className="text-xl font-semibold mb-2 text-white">Latest Movies</h3>
+                <h3 className="text-xl font-semibold mb-2 text-white">Explore Our Expansive Library</h3>
                 <p className="text-gray-400 group-hover:text-gray-300 transition-colors">
-                  New releases every week
+                  Dive into a vast collection of movies and TV shows, all in one place. Our intuitive, sleek interface makes browsing a breeze, so you can effortlessly discover what's next to watch with ease.
                 </p>
               </div>
             </div>
 
-            {/* TV Shows */}
+            {/* Contact Us */}
             <div className="group relative overflow-hidden rounded-xl backdrop-blur-md bg-black/30 border border-white/10 p-8 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 hover:bg-white/10">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative z-10">
-                <Tv2 className="w-12 h-12 mb-4 text-emerald-500 group-hover:scale-110 transition-transform" />
-                <h3 className="text-xl font-semibold mb-2 text-white">TV Shows</h3>
+                <MessageCircle className="w-12 h-12 mb-4 text-emerald-500 group-hover:scale-110 transition-transform" />
+                <h3 className="text-xl font-semibold mb-2 text-white">We'd Love to Hear From You</h3>
                 <p className="text-gray-400 group-hover:text-gray-300 transition-colors">
-                  Binge-worthy series
+                  Have special requests or content recommendations? We're all ears! Feel free to reach out to us, and let's make BuzzPlay your ultimate streaming experience.
                 </p>
               </div>
             </div>

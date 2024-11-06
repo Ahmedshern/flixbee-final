@@ -42,7 +42,7 @@ export function SubscriptionStatus({ userData }: SubscriptionStatusProps) {
               </AlertDescription>
             </Alert>
             <Button variant="outline" asChild>
-              <Link href="/dashboard/billing">Manage Subscription</Link>
+              <Link href="/pricing">Upgrade Subscription</Link>
             </Button>
           </>
         ) : (

@@ -1,4 +1,4 @@
-import { doc, updateDoc, getDocs, collection } from "firebase/firestore";
+import { doc, updateDoc, getDocs, collection, addDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 export async function handleSubscriptionExpiration(userId: string, embyUserId: string) {
@@ -20,23 +20,38 @@ export async function handleSubscriptionExpiration(userId: string, embyUserId: s
   }
 }
 
-export async function activateSubscription(userId: string, embyUserId: string, plan: string, duration: number) {
+export async function activateSubscription(
+  userId: string, 
+  embyUserId: string, 
+  plan: string,
+  duration: number,
+  amount: number
+) {
   try {
+    // Calculate subscription end date
     const subscriptionEnd = new Date();
-    // Calculate end date based on selected duration (in months)
     subscriptionEnd.setMonth(subscriptionEnd.getMonth() + duration);
 
-    // Update Firestore subscription status
+    // Update Emby user policy
+    await updateEmbyUserPolicy(embyUserId, true);
+
+    // Create transaction record
+    await addDoc(collection(db, "transactions"), {
+      userId: userId,
+      plan: plan,
+      duration: duration,
+      amount: amount,
+      date: new Date().toISOString(),
+      status: "completed"
+    });
+
+    // Update user subscription in Firestore
     await updateDoc(doc(db, "users", userId), {
       subscriptionStatus: "active",
       subscriptionEnd: subscriptionEnd.toISOString(),
       plan: plan,
-      duration: duration, // Store the duration for reference
-      lastPayment: new Date().toISOString(),
+      duration: duration,
     });
-
-    // Enable Emby user access
-    await updateEmbyUserPolicy(embyUserId, true);
 
     return true;
   } catch (error) {
@@ -66,14 +81,13 @@ export async function deactivateSubscription(userId: string, embyUserId: string)
 
 export const updateEmbyUserPolicy = async (userId: string, enableAccess: boolean) => {
   try {
-    const response = await fetch(`${process.env.EMBY_SERVER_URL}/Users/${userId}/Policy`, {
+    const response = await fetch('/api/emby/enable-user', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Emby-Token': process.env.EMBY_API_KEY as string,
       },
       body: JSON.stringify({
-        IsDisabled: !enableAccess,
+        embyUserId: userId,
       }),
     });
 

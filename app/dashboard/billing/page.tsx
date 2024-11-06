@@ -14,7 +14,9 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface Transaction {
   id: string;
@@ -22,6 +24,7 @@ interface Transaction {
   date: string;
   plan: string;
   status: string;
+  duration: number;
 }
 
 export default function BillingPage() {
@@ -40,10 +43,15 @@ export default function BillingPage() {
         
         const transactionData: Transaction[] = [];
         querySnapshot.forEach((doc) => {
+          const data = doc.data();
           transactionData.push({
             id: doc.id,
-            ...doc.data(),
-          } as Transaction);
+            amount: data.amount,
+            date: data.date,
+            plan: data.plan,
+            status: data.status,
+            duration: data.duration
+          });
         });
 
         setTransactions(transactionData.sort((a, b) => 
@@ -69,6 +77,14 @@ export default function BillingPage() {
 
   return (
     <div className="container py-8">
+      <div className="flex items-center mb-6">
+        <Button variant="ghost" asChild className="gap-2">
+          <Link href="/dashboard">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Dashboard
+          </Link>
+        </Button>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>Billing History</CardTitle>
@@ -83,6 +99,7 @@ export default function BillingPage() {
                 <TableRow>
                   <TableHead>Date</TableHead>
                   <TableHead>Plan</TableHead>
+                  <TableHead>Duration</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
@@ -94,7 +111,8 @@ export default function BillingPage() {
                       {format(new Date(transaction.date), "PPP")}
                     </TableCell>
                     <TableCell className="capitalize">{transaction.plan}</TableCell>
-                    <TableCell>${transaction.amount}</TableCell>
+                    <TableCell>{transaction.duration} months</TableCell>
+                    <TableCell>MVR {transaction.amount}</TableCell>
                     <TableCell className="capitalize">{transaction.status}</TableCell>
                   </TableRow>
                 ))}

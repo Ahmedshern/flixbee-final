@@ -8,80 +8,23 @@ import { useAuthContext } from "@/components/auth-provider";
 import { useRouter } from "next/navigation";
 import { AnimatedEntrance } from "@/components/ui/animated-entrance";
 import { motion } from "framer-motion";
-
-const plans = [
-  {
-    name: "Basic",
-    price: 149,
-    description: "1 Month Package",
-    features: [
-      "Unlimited Movies & TV Shows",
-      "Ad-Free Streaming",
-      "Watch on 2 Devices Simultaneously",
-      "Full HD Streaming",
-      "Personalized Watchlist",
-      "Parental Controls",
-    ],
-    specialOffers: {
-      3: 144,
-      6: 139,
-    },
-  },
-  {
-    name: "Standard",
-    price: 179,
-    description: "1 Month Package",
-    features: [
-      "Unlimited Movies & TV Shows",
-      "Ad-Free Streaming",
-      "Watch on 3 Devices Simultaneously",
-      "Full HD Streaming",
-      "Personalized Watchlist",
-      "Offline Viewing",
-      "Parental Controls",
-    ],
-    specialOffers: {
-      3: 174,
-      6: 169,
-    },
-  },
-  {
-    name: "Premium",
-    price: 219,
-    description: "1 Month Package",
-    features: [
-      "Unlimited Movies & TV Shows",
-      "Ad-Free Streaming",
-      "Watch on 4 Devices Simultaneously",
-      "Full HD Streaming",
-      "Personalized Watchlist",
-      "Offline Viewing",
-      "Parental Controls",
-    ],
-    specialOffers: {
-      3: 214,
-      6: 209,
-    },
-  },
-];
-
-type SelectedDurations = {
-  [key: string]: number;
-};
+import { plans } from "@/lib/config/plans";
 
 export default function PricingPage() {
   const { user } = useAuthContext();
   const router = useRouter();
-  const [selectedDurations, setSelectedDurations] = useState<SelectedDurations>(
-    plans.reduce((acc, plan) => ({ ...acc, [plan.name]: 1 }), {} as SelectedDurations)
-  );
+  const [selectedDurations, setSelectedDurations] = useState({
+    Basic: 1,
+    Standard: 1,
+    Premium: 1,
+  });
 
   const handleSubscribe = (planName: string) => {
     if (!user) {
       router.push("/register");
       return;
     }
-    const duration = selectedDurations[planName];
+    const duration = selectedDurations[planName as keyof typeof selectedDurations];
     router.push(`/checkout?plan=${planName.toLowerCase()}&duration=${duration}`);
   };
 
@@ -112,7 +55,7 @@ export default function PricingPage() {
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8 max-w-7xl mx-auto">
           {plans.map((plan, index) => {
-            const duration = selectedDurations[plan.name];
+            const duration = selectedDurations[plan.name as keyof typeof selectedDurations];
             const monthlyPrice = duration === 1 ? plan.price : plan.specialOffers[duration as keyof typeof plan.specialOffers];
             const totalPrice = monthlyPrice * duration;
 

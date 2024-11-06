@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { updateEmbyUserPassword } from "@/lib/emby";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 export default function SettingsPage() {
   const { user } = useAuthContext();
@@ -73,6 +75,14 @@ export default function SettingsPage() {
 
   return (
     <div className="container py-8">
+      <div className="flex items-center mb-6">
+        <Button variant="ghost" asChild className="gap-2">
+          <Link href="/dashboard">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Dashboard
+          </Link>
+        </Button>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>Account Settings</CardTitle>
