@@ -96,7 +96,13 @@ export default function Home() {
               <Link href="/pricing">View Plans</Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <Link href="/contact">Contact Us</Link>
+              <Link 
+                href="https://t.me/buzzplaymv" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                Contact Us
+              </Link>
             </Button>
           </div>
         </div>
