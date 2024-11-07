@@ -71,8 +71,8 @@ export default function DashboardPage() {
                 <h3 className="font-medium text-sm text-muted-foreground">Step by Step Guide:</h3>
                 <ol className="space-y-3 text-sm">
                   <li>1. Install Emby</li>
-                  <li>2. Press "Next"</li>
-                  <li>3. Press "Skip"</li>
+                  <li>2. Press &quot;Next&quot;</li>
+                  <li>3. Press &quot;Skip&quot;</li>
                   <li>4. Add Host & Port</li>
                 </ol>
                 <div className="space-y-2">
@@ -92,8 +92,8 @@ export default function DashboardPage() {
                 <p>Read this before installing Emby on iOS</p>
                 <p className="text-muted-foreground mt-1 text-xs">
                   If you see a message asking to pay for Emby premiere on iOS and Apple TV app 
-                  you will have to pay a one time unlock fee of 5 USD. We don't collect that. 
-                  It's collected by Emby via Apple's Appstore or Google Playstore's in-app purchase.
+                  you will have to pay a one time unlock fee of 5 USD. We don&apos;t collect that. 
+                  It&apos;s collected by Emby via Apple&apos;s Appstore or Google Playstore&apos;s in-app purchase.
                 </p>
               </div>
 

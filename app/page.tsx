@@ -120,7 +120,7 @@ export default function Home() {
                 <Play className="w-12 h-12 mb-4 text-emerald-500 group-hover:scale-110 transition-transform" />
                 <h3 className="text-xl font-semibold mb-2 text-white">Stream on Any Device</h3>
                 <p className="text-gray-400 group-hover:text-gray-300 transition-colors">
-                  BuzzPlay makes it easy to watch on almost any device—whether you're on iOS, macOS, Android, or using a web browser. Stream seamlessly on your favorite device, anytime, anywhere.
+                  BuzzPlay makes it easy to watch on almost any device—whether you&apos;re on iOS, macOS, Android, or using a web browser. Stream seamlessly on your favorite device, anytime, anywhere.
                 </p>
               </div>
             </div>
@@ -132,7 +132,7 @@ export default function Home() {
                 <Film className="w-12 h-12 mb-4 text-emerald-500 group-hover:scale-110 transition-transform" />
                 <h3 className="text-xl font-semibold mb-2 text-white">Explore Our Expansive Library</h3>
                 <p className="text-gray-400 group-hover:text-gray-300 transition-colors">
-                  Dive into a vast collection of movies and TV shows, all in one place. Our intuitive, sleek interface makes browsing a breeze, so you can effortlessly discover what's next to watch with ease.
+                  Dive into a vast collection of movies and TV shows, all in one place. Our intuitive, sleek interface makes browsing a breeze, so you can effortlessly discover what&apos;s next to watch with ease.
                 </p>
               </div>
             </div>
@@ -142,9 +142,9 @@ export default function Home() {
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative z-10">
                 <MessageCircle className="w-12 h-12 mb-4 text-emerald-500 group-hover:scale-110 transition-transform" />
-                <h3 className="text-xl font-semibold mb-2 text-white">We'd Love to Hear From You</h3>
+                <h3 className="text-xl font-semibold mb-2 text-white">We&apos;d Love to Hear From You</h3>
                 <p className="text-gray-400 group-hover:text-gray-300 transition-colors">
-                  Have special requests or content recommendations? We're all ears! Feel free to reach out to us, and let's make BuzzPlay your ultimate streaming experience.
+                  Have special requests or content recommendations? We&apos;re all ears! Feel free to reach out to us, and let&apos;s make BuzzPlay your ultimate streaming experience.
                 </p>
               </div>
             </div>
