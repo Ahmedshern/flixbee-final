@@ -11,8 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Film, Loader2, Eye, EyeOff } from "lucide-react";
-import { createEmbyUser } from "@/lib/emby";
-
+import styles from '@/styles/glow.module.css';
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,45 +27,43 @@ export default function RegisterPage() {
     
     if (password !== confirmPassword) {
       toast({
-        title: "Passwords don't match",
-        description: "Please make sure your passwords match.",
         variant: "destructive",
+        title: "Error",
+        description: "Passwords do not match",
       });
       return;
     }
-
-    let firebaseUser = null;
+    
+    setLoading(true);
 
     try {
-      setLoading(true);
-
-      // Create Firebase user
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      firebaseUser = userCredential.user;
-
-      // Create Emby user
-      const embyResponse = await fetch('/api/emby/create-user', {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify({ email, password }),
       });
 
-      const embyData = await embyResponse.json();
+      const data = await response.json();
 
-      if (!embyResponse.ok) {
-        // If Emby creation fails, delete the Firebase user
-        if (firebaseUser) {
-          await firebaseUser.delete();
-        }
-        throw new Error(embyData.details || embyData.error || 'Failed to create streaming account');
+      if (!response.ok) {
+        throw new Error(data.error || data.details || 'Registration failed');
       }
 
+      if (!data.Id) {
+        throw new Error('Invalid response from streaming service');
+      }
+
+      // Create Firebase user
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
       // Create Firestore document
-      await setDoc(doc(db, "users", firebaseUser.uid), {
-        email: firebaseUser.email,
-        embyUserId: embyData.Id,
+      await setDoc(doc(db, "users", user.uid), {
+        email: user.email,
+        embyUserId: data.Id,
         subscriptionStatus: "inactive",
         subscriptionEnd: null,
         plan: null,
@@ -76,26 +73,16 @@ export default function RegisterPage() {
 
       toast({
         title: "Account created successfully!",
-        description: "Welcome to BuzzPlay. Redirecting to dashboard...",
+        description: "Please proceed to select your subscription plan.",
       });
 
       router.push("/dashboard");
     } catch (error: any) {
       console.error("Registration error:", error);
-      
-      // Clean up Firebase user if it exists and there was an error
-      if (firebaseUser) {
-        try {
-          await firebaseUser.delete();
-        } catch (deleteError) {
-          console.error("Error deleting Firebase user:", deleteError);
-        }
-      }
-
       toast({
-        title: "Registration failed",
-        description: error.message || "Something went wrong. Please try again.",
         variant: "destructive",
+        title: "Registration failed",
+        description: error.message || "An error occurred during registration",
       });
     } finally {
       setLoading(false);
@@ -103,15 +90,16 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="container flex items-center justify-center min-h-[calc(100vh-3.5rem)]">
-      <Card className="w-full max-w-md">
+    <div className="container flex h-screen w-screen flex-col items-center justify-center">
+      <div className={styles.glowContainer}>
+              <Card className="w-[90%] max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
-            <Film className="h-12 w-12 text-primary" />
+            <Film className="h-8 w-8 text-cyan" />
           </div>
           <CardTitle className="text-2xl text-center">Create an account</CardTitle>
           <CardDescription className="text-center">
-            Enter your details below to create your account
+            Enter your email and password below to create your account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -123,86 +111,67 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={loading}
               />
             </div>
-            <div className="space-y-2 relative">
+            <div className="space-y-2">
               <div className="relative">
                 <Input
                   type={showPassword ? "text" : "password"}
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pr-10"
                   required
+                  disabled={loading}
                 />
-                <Button
+                <button
                   type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                   onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2 top-2.5 text-muted-foreground hover:text-foreground"
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                  <span className="sr-only">
-                    {showPassword ? "Hide password" : "Show password"}
-                  </span>
-                </Button>
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
             </div>
-            <div className="space-y-2 relative">
+            <div className="space-y-2">
               <div className="relative">
                 <Input
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirm Password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="pr-10"
                   required
+                  disabled={loading}
                 />
-                <Button
+                <button
                   type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-2 top-2.5 text-muted-foreground hover:text-foreground"
                 >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                  <span className="sr-only">
-                    {showConfirmPassword ? "Hide password" : "Show password"}
-                  </span>
-                </Button>
+                  {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
             </div>
             <Button className="w-full" type="submit" disabled={loading}>
               {loading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating account...
+                </>
               ) : (
-                "Create Account"
+                "Create account"
               )}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">
             Already have an account?{" "}
-            <Link href="/login" className="text-primary hover:underline">
+            <Link href="/login" className="text-cyan hover:underline">
               Sign in
-            </Link>
-          </div>
-          <div className="mt-2 text-center text-sm">
-            Forgot your password?{" "}
-            <Link href="/reset-password" className="text-primary hover:underline">
-              Reset it here
             </Link>
           </div>
         </CardContent>
       </Card>
+    </div>
     </div>
   );
 }

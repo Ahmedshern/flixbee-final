@@ -63,27 +63,42 @@ function CheckoutPageContent() {
       const receiptRef = ref(storage, `receipts/${user.uid}/${Date.now()}_${receipt.name}`);
       await uploadBytes(receiptRef, receipt);
 
-      // Activate subscription with duration
-      await activateSubscription(
-        user.uid, 
-        userData.embyUserId, 
-        planName!, 
-        duration,
-        totalPrice
-      );
+      // Normalize plan name to match configuration
+      const normalizedPlanName = (planName ?? 'basic').charAt(0).toUpperCase() + 
+        (planName ?? 'basic').slice(1).toLowerCase();
+
+      // Activate subscription through API
+      const response = await fetch('/api/subscription/activate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.uid,
+          embyUserId: userData.embyUserId,
+          plan: normalizedPlanName,
+          duration: duration,
+          amount: totalPrice
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to activate subscription');
+      }
 
       toast({
         title: "Subscription activated!",
-        description: `Your ${duration}-month ${planName} subscription has been activated.`,
+        description: `Your ${duration}-month ${normalizedPlanName} subscription has been activated.`,
       });
 
       router.push("/dashboard");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error processing subscription:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to process payment. Please try again.",
+        description: error.message || "Failed to process subscription. Please try again.",
       });
     } finally {
       setLoading(false);

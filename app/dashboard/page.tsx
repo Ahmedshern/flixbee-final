@@ -10,6 +10,8 @@ import { Loader2, Settings, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { SubscriptionStatus } from "@/components/subscription-status";
+import { EmberBackground } from "@/components/EmberBackground";
+import { AnimatedButton } from "@/components/ui/animated-button";
 
 interface UserData {
   subscriptionStatus: string;
@@ -54,13 +56,14 @@ export default function DashboardPage() {
 
   return (
     <>
+      <EmberBackground />
       <DashboardHeader />
       <div className="container py-4 px-4 md:py-8 md:px-8">
         <div className="grid gap-4 md:gap-8">
           <SubscriptionStatus userData={userData} />
 
           {/* Instructions Card */}
-          <Card className="backdrop-blur-sm bg-black/40 border-zinc-800">
+          <Card className="bg-black/60 border-zinc-800">
             <CardHeader>
               <CardTitle className="text-lg md:text-xl">Installation Instructions</CardTitle>
               <CardDescription>Follow these steps to start watching</CardDescription>
@@ -103,11 +106,11 @@ export default function DashboardPage() {
 
               {/* App Buttons */}
               <div className="space-y-3 pt-2">
-                <Button className="w-full bg-green-500 hover:bg-green-600" asChild>
+                <AnimatedButton className="animated-btn w-full bg-green-500 hover:bg-green-600" asChild>
                   <Link href="https://apps.apple.com/app/emby/id992180193" target="_blank">
                     iOS
                   </Link>
-                </Button>
+                </AnimatedButton>
                 <Button className="w-full bg-emerald-500 hover:bg-emerald-600" asChild>
                   <Link href="https://play.google.com/store/apps/details?id=tv.emby.embyatv" target="_blank">
                     Android
@@ -123,7 +126,7 @@ export default function DashboardPage() {
           </Card>
 
           <div className="grid gap-4 md:gap-8 md:grid-cols-2">
-            <Card className="backdrop-blur-sm bg-black/40 border-zinc-800">
+            <Card className="bg-black/60 border-zinc-800">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
                   <CreditCard className="h-5 w-5" />
@@ -138,7 +141,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="backdrop-blur-sm bg-black/40 border-zinc-800">
+            <Card className="bg-black/60 border-zinc-800">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
                   <Settings className="h-5 w-5" />

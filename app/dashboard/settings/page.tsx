@@ -2,17 +2,16 @@
 
 import { useState } from "react";
 import { useAuthContext } from "@/components/auth-provider";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { updatePassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
-import { updateEmbyUserPassword } from "@/lib/emby";
+import { Loader2, ArrowLeft } from "lucide-react";
+import { EmbyService } from "@/lib/services/emby";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 
 export default function SettingsPage() {
   const { user } = useAuthContext();
@@ -34,39 +33,69 @@ export default function SettingsPage() {
       return;
     }
 
+    if (newPassword.length < 6) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "New password must be at least 6 characters long",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
       if (!user) throw new Error("No user logged in");
+      if (!user.email) throw new Error("User email not found");
 
-      // Get user's Emby ID from Firestore
+      // Get user's Emby ID first
       const userDoc = await getDoc(doc(db, "users", user.uid));
       const userData = userDoc.data();
       
       if (!userData?.embyUserId) {
-        throw new Error("Emby user ID not found");
+        throw new Error("User not properly configured");
       }
 
-      // Update Firebase password
-      await updatePassword(user, newPassword);
+      // First reauthenticate the user
+      const credential = EmailAuthProvider.credential(
+        user.email,
+        currentPassword
+      );
+      
+      await reauthenticateWithCredential(user, credential);
 
-      // Update Emby password
-      await updateEmbyUserPassword(userData.embyUserId, newPassword);
-
-      toast({
-        title: "Success",
-        description: "Your password has been updated.",
-      });
+      // Update both services
+      await Promise.all([
+        updatePassword(user, newPassword),
+        EmbyService.updatePassword(userData.embyUserId, newPassword)
+      ]);
 
       // Clear form
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+      
+      toast({
+        title: "Success",
+        description: "Your password has been updated successfully.",
+      });
+
     } catch (error: any) {
+      console.error("Password update error:", error);
+      
+      let errorMessage = "Failed to update password";
+      if (error.code === 'auth/wrong-password') {
+        errorMessage = "Current password is incorrect";
+      } else if (error.code === 'auth/requires-recent-login') {
+        errorMessage = "Please log in again before changing your password";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message,
+        description: errorMessage,
       });
     } finally {
       setLoading(false);
@@ -99,6 +128,7 @@ export default function SettingsPage() {
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 required
+                disabled={loading}
               />
             </div>
             <div className="space-y-2">
@@ -108,6 +138,7 @@ export default function SettingsPage() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
+                disabled={loading}
               />
             </div>
             <div className="space-y-2">
@@ -117,11 +148,15 @@ export default function SettingsPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
+                disabled={loading}
               />
             </div>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading} className="w-full">
               {loading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Updating password...
+                </>
               ) : (
                 "Update Password"
               )}

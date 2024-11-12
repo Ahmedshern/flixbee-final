@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { collection, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { updateEmbyUserPolicy } from '@/lib/subscription';
+import { EmbyService } from '@/lib/services/emby';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -71,7 +71,7 @@ export default function AdminDashboard() {
       const enableAccess = currentStatus !== 'active';
       
       // Update Emby access
-      await updateEmbyUserPolicy(embyUserId, enableAccess);
+      await EmbyService.updateUserPolicy(embyUserId, enableAccess);
       
       // Update Firestore user status
       await updateDoc(doc(db, 'users', userId), {
@@ -107,59 +107,39 @@ export default function AdminDashboard() {
 
     setActionLoading(userToDelete.id);
     try {
-      console.log('Attempting to delete user:', userToDelete);
-
-      // Delete from Firebase Auth first
-      const response = await fetch('/api/admin/delete-firebase-user', {
+      const response = await fetch('/api/admin/users/delete', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          userId: userToDelete.id 
+          userId: userToDelete.id,
+          embyUserId: userToDelete.embyUserId 
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete user from authentication');
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to delete user');
       }
 
-      // Check if we have a valid Emby user ID
-      if (userToDelete.embyUserId) {
-        // Delete from Emby if we have an Emby ID
-        const embyResponse = await fetch('/api/admin/delete-emby-user', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ 
-            embyUserId: userToDelete.embyUserId 
-          }),
-        });
-
-        if (!embyResponse.ok) {
-          console.error('Failed to delete from Emby');
-        }
-      }
-
-      // Delete from Firestore
-      await deleteDoc(doc(db, 'users', userToDelete.id));
-      await fetchUsers();
+      // Update local state
+      setUsers(users.filter(user => user.id !== userToDelete.id));
+      setDeleteDialogOpen(false);
       
       toast({
         title: "Success",
-        description: "User has been deleted successfully",
+        description: "User deleted successfully"
       });
-    } catch (error) {
-      console.error('Delete error:', error);
+    } catch (error: any) {
+      console.error("Delete error:", error);
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to delete user",
         variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to delete user"
       });
     } finally {
       setActionLoading(null);
-      setDeleteDialogOpen(false);
       setUserToDelete(null);
     }
   };
@@ -260,24 +240,35 @@ export default function AdminDashboard() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription className="text-muted-foreground">
-              This will permanently delete the user from both Firebase and Emby.
+              This will permanently delete the user {userToDelete?.email} from both Firebase and Emby.
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>
+            <AlertDialogCancel 
+              onClick={() => {
+                setDeleteDialogOpen(false);
+                setUserToDelete(null);
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              disabled={!!actionLoading}
+            >
               {actionLoading === userToDelete?.id ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                'Delete'
-              )}
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : null}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={receiptsDialogOpen} onOpenChange={setReceiptsDialogOpen}>
+      <AlertDialog open={receiptsDialogOpen} onOpenChange={(open) => {
+        setReceiptsDialogOpen(open);
+        if (!open) setSelectedUser(null);
+      }}>
         <AlertDialogContent className="max-w-3xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Payment Receipts - {selectedUser?.email}</AlertDialogTitle>

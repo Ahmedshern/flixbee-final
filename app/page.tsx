@@ -3,10 +3,13 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+
 import { Play, Film, Tv2, MessageCircle } from "lucide-react";
 import Link from "next/link";
-import { AnimatedEntrance } from "@/components/ui/animated-entrance";
+
+import { AnimatedGradientText } from "@/components/AnimatedGradientText";
+import { AnimatedButton } from "@/components/ui/animated-button";
+import { StarryBackground } from '@/components/StarryBackground';
 
 const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/original";
@@ -53,7 +56,7 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col">
       {/* Hero Section - Full Viewport Height */}
-      <div className="relative flex flex-1 flex-col items-center justify-center text-center px-4 min-h-screen">
+      <div className="relative flex flex-1 flex-col items-center justify-center text-center px-4 min-h-screen -mt-16">
         {/* Movie Background */}
         <AnimatePresence mode="wait">
           {!isLoading && (
@@ -76,11 +79,11 @@ export default function Home() {
         </AnimatePresence>
 
         {/* Glassmorphism Container */}
-        <div className="relative max-w-4xl mx-auto p-8 rounded-xl backdrop-blur-md bg-white/10 dark:bg-black/10 border border-white/20 dark:border-white/10 shadow-xl">
+        <div className="relative max-w-4xl mx-auto p-8 rounded-xl backdrop-blur-md bg-white/10 dark:bg-black/10 border border-white/20 dark:border-white/10 shadow-xl mt-16">
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
             <span className="text-black dark:text-white">Your Entertainment,</span>
             <br />
-            <span className="text-emerald-500 underline decoration-emerald-500/50">Unleashed</span>
+            <AnimatedGradientText text="Unleashed" className="text-4xl font-bold" />
           </h1>
           
           <p className="mt-6 text-lg text-white">
@@ -89,9 +92,9 @@ export default function Home() {
           </p>
 
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Button asChild size="lg" className="bg-emerald-500 hover:bg-emerald-600">
+            <AnimatedButton asChild size="lg" className="animated-btn bg-emerald-500 hover:bg-emerald-600">
               <Link href="/register">Get Started</Link>
-            </Button>
+            </AnimatedButton>
             <Button asChild size="lg" variant="outline">
               <Link href="/pricing">View Plans</Link>
             </Button>
@@ -109,15 +112,9 @@ export default function Home() {
       </div>
 
       {/* Features Section */}
-      <div className="relative z-10 py-24" 
-           style={{ 
-             backgroundImage: 'url(/images/features-bg.png)',
-             backgroundSize: 'cover',
-             backgroundPosition: 'center',
-             backgroundRepeat: 'no-repeat',
-             opacity: 0.9
-           }}>
-        <div className="container px-4 md:px-6">
+      <div className="relative z-10 py-24">
+        <StarryBackground />
+        <div className="container relative z-10 px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Stream on Any Device */}
             <div className="group relative overflow-hidden rounded-xl backdrop-blur-md bg-black/30 border border-white/10 p-8 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 hover:bg-white/10">

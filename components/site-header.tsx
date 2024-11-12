@@ -3,9 +3,11 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { AnimatedMobileNav } from "@/components/ui/animated-mobile-nav";
+
+
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -24,12 +26,12 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useAuthContext } from "@/components/auth-provider";
-import { Film, Menu, CreditCard, LayoutDashboard, LogIn, UserPlus, LogOut, HelpCircle } from "lucide-react";
-import { motion } from "framer-motion";
+import { Film, Menu, CreditCard, LayoutDashboard, LogIn, UserPlus, LogOut } from "lucide-react";
+
 import { AnimatedEntrance } from "@/components/ui/animated-entrance";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import Image from "next/image";
+import Image from 'next/image';
 
 const MainNav = () => {
   const pathname = usePathname();
@@ -52,17 +54,6 @@ const MainNav = () => {
 const MobileNav = () => {
   const { user } = useAuthContext();
   const [open, setOpen] = React.useState(false);
-  const router = useRouter();
-
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-      router.push("/");
-      setOpen(false);
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
-  };
   
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -90,53 +81,31 @@ const MobileNav = () => {
               className="flex items-center gap-2"
               onClick={() => setOpen(false)}
             >
-              <Image
-                src="/images/logo.svg" 
-                alt="BuzzPlay Logo"
-                width={32}
-                height={32}
-                priority
-              />
-              <span 
-                className="font-bold text-2xl" 
-                style={{ fontFamily: 'SequelSansBlack' }}
-              >
-                <span className="text-black dark:text-white">Buzz</span>
-                <span className="text-cyan">Play</span>
-              </span>
+              <Film className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500" />
+              <span className="font-bold text-xl sm:text-2xl">BuzzPlay</span>
             </Link>
           </div>
 
           <nav className="flex-1 overflow-y-auto p-3 sm:p-4" aria-label="Main navigation">
             <div className="space-y-1 sm:space-y-2">
-            <Link 
-                    href="/register" 
-                    className="flex items-center gap-3 px-3 py-2 text-sm rounded-lg hover:bg-accent transition-colors"
-                    onClick={() => setOpen(false)}
-                  >
-                    <UserPlus className="h-4 w-4" />
-                    <span>Get Started</span>
-                  </Link>
-              
+              <Link 
+                href="/pricing" 
+                className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 text-sm rounded-lg hover:bg-accent transition-colors"
+                onClick={() => setOpen(false)}
+              >
+                <CreditCard className="h-4 w-4" />
+                <span>Pricing</span>
+              </Link>
 
               {user ? (
-                <>
-                  <Link 
-                    href="/dashboard" 
-                    className="flex items-center gap-3 px-3 py-2 text-sm rounded-lg hover:bg-accent transition-colors"
-                    onClick={() => setOpen(false)}
-                  >
-                    <LayoutDashboard className="h-4 w-4" />
-                    <span>Dashboard</span>
-                  </Link>
-                  <button
-                    onClick={handleSignOut}
-                    className="flex w-full items-center gap-3 px-3 py-2 text-sm rounded-lg hover:bg-accent transition-colors"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>Sign out</span>
-                  </button>
-                </>
+                <Link 
+                  href="/dashboard" 
+                  className="flex items-center gap-3 px-3 py-2 text-sm rounded-lg hover:bg-accent transition-colors"
+                  onClick={() => setOpen(false)}
+                >
+                  <LayoutDashboard className="h-4 w-4" />
+                  <span>Dashboard</span>
+                </Link>
               ) : (
                 <>
                   <Link 
@@ -148,23 +117,13 @@ const MobileNav = () => {
                     <span>Login</span>
                   </Link>
                   <Link 
-                href="/pricing" 
-                className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 text-sm rounded-lg hover:bg-accent transition-colors"
-                onClick={() => setOpen(false)}
-              >
-                <CreditCard className="h-4 w-4" />
-                <span>Pricing</span>
-              </Link>
-
-              <Link 
-                href="/faq" 
-                className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 text-sm rounded-lg hover:bg-accent transition-colors"
-                onClick={() => setOpen(false)}
-              >
-                <HelpCircle className="h-4 w-4" />
-                <span>FAQ</span>
-              </Link>
-                  
+                    href="/register" 
+                    className="flex items-center gap-3 px-3 py-2 text-sm rounded-lg hover:bg-accent transition-colors"
+                    onClick={() => setOpen(false)}
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    <span>Get Started</span>
+                  </Link>
                 </>
               )}
             </div>
@@ -199,19 +158,21 @@ export function SiteHeader() {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 100, damping: 20 }}
-      className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      className="sticky top-0 z-50 w-full backdrop-blur-sm"
     >
       <div className="container flex h-16 items-center">
-        <MobileNav />
+        <AnimatedMobileNav user={user} handleSignOut={handleSignOut} />
         <motion.div
           whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 400, damping: 10 }}
         >
           <Link href="/" className="flex items-center space-x-2 sm:space-x-3 ml-2 md:ml-0">
-            <img 
-              src="./images/logo.svg" 
-              alt="BuzzPlay Logo" 
-              className="h-10 w-10 sm:h-12 sm:w-12 md:h-16 md:w-16" 
+            <Image 
+              src="/images/logo.svg"
+              alt="BuzzPlay Logo"
+              width={64}
+              height={64}
+              className="h-10 w-10 sm:h-12 sm:w-12 md:h-16 md:w-16"
             />
             <span 
               className="font-bold text-2xl sm:text-3xl md:text-5xl" 
@@ -224,40 +185,32 @@ export function SiteHeader() {
         </motion.div>
         
         <div className="flex items-center ml-auto">
-          <AnimatedEntrance className="hidden md:flex items-center space-x-4">
+          <nav className="hidden md:flex items-center space-x-6">
+            <Link href="/pricing" className="text-sm font-medium text-muted-foreground hover:text-cyan">
+              Pricing
+            </Link>
+            <Link href="/faq" className="text-sm font-medium text-muted-foreground hover:text-cyan">
+              FAQ
+            </Link>
             {user ? (
-              <>
-                <Button asChild className="bg-cyan hover:bg-cyan/70">
-                  <Link href="/dashboard">Dashboard</Link>
-                </Button>
-                <Link href="/faq" className="text-sm font-medium text-muted-foreground hover:text-cyan">
-                  FAQ
-                </Link>
-                <button
-                  onClick={handleSignOut}
-                  className="text-sm font-medium text-muted-foreground hover:text-cyan flex items-center gap-2"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Sign out
-                </button>
-              </>
+              <button
+                onClick={handleSignOut}
+                className="text-sm font-medium text-muted-foreground hover:text-cyan flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign out
+              </button>
             ) : (
               <>
-                <Link href="/pricing" className="text-sm font-medium text-muted-foreground hover:text-cyan">
-                  Pricing
-                </Link>
-                <Link href="/faq" className="text-sm font-medium text-muted-foreground hover:text-cyan">
-                  FAQ
-                </Link>
                 <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-cyan">
                   Login
                 </Link>
-                <Button asChild>
-                  <Link href="/register" className="bg-cyan hover:bg-cyan/70">Get Started</Link>
+                <Button asChild className="bg-emerald-500 hover:bg-emerald-600">
+                  <Link href="/register">Get Started</Link>
                 </Button>
               </>
             )}
-          </AnimatedEntrance>
+          </nav>
         </div>
       </div>
     </motion.header>

@@ -11,10 +11,12 @@ export const plans = [
       "Personalized Watchlist",
       "Parental Controls",
     ],
+    deviceLimit: 2,
     specialOffers: {
       3: 144,
       6: 139,
     },
+    popular: true
   },
   {
     name: "Standard",
@@ -29,10 +31,12 @@ export const plans = [
       "Offline Viewing",
       "Parental Controls",
     ],
+    deviceLimit: 3,
     specialOffers: {
       3: 174,
       6: 169,
     },
+    popular: false
   },
   {
     name: "Premium",
@@ -47,9 +51,11 @@ export const plans = [
       "Offline Viewing",
       "Parental Controls",
     ],
+    deviceLimit: 4,
     specialOffers: {
       3: 214,
       6: 209,
     },
+    popular: false
   },
 ]; 

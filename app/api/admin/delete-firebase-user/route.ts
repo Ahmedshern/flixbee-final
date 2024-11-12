@@ -1,12 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getAuth } from 'firebase-admin/auth';
-import { initAdmin } from '@/lib/firebase-admin';
 
 export async function POST(request: Request) {
   try {
-    // Initialize Firebase Admin if not already initialized
-    initAdmin();
-    
     const { userId } = await request.json();
     
     if (!userId) {

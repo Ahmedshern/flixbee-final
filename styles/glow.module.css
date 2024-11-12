@@ -1,0 +1,53 @@
+.glowContainer {
+    position: relative;
+    width: fit-content;
+    height: fit-content;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .glowContainer::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    z-index: -1;
+    background: linear-gradient(
+      270deg,
+      #0fffc1,
+      #7e0fff,
+      #0fffc1,
+      #7e0fff
+    );
+    background-size: 300% 300%;
+    animation: animateGlow 8s ease infinite;
+    filter: blur(20px);
+    border-radius: 1rem;
+    opacity: 0.85;
+    transform: scale(1.02);
+    transition: all 0.3s ease;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .glowContainer:hover::after {
+    filter: blur(25px);
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  
+  @keyframes animateGlow {
+    0% { background-position: 0% 50% }
+    50% { background-position: 100% 50% }
+    100% { background-position: 0% 50% }
+  }
+  
+  .glowContainer {
+    animation: pulseContainer 4s ease infinite;
+  }
+  
+  @keyframes pulseContainer {
+    0% { transform: scale(1) }
+    50% { transform: scale(1.005) }
+    100% { transform: scale(1) }
+  }

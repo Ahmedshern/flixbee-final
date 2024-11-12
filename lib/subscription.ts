@@ -1,5 +1,6 @@
 import { doc, updateDoc, getDocs, collection, addDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { EmbyService } from '@/lib/services/emby';
 
 export async function handleSubscriptionExpiration(userId: string, embyUserId: string) {
   try {
@@ -11,7 +12,7 @@ export async function handleSubscriptionExpiration(userId: string, embyUserId: s
     });
 
     // Disable Emby user access
-    await updateEmbyUserPolicy(embyUserId, false);
+    await EmbyService.updateUserPolicy(embyUserId, false);
 
     return true;
   } catch (error) {
@@ -28,12 +29,11 @@ export async function activateSubscription(
   amount: number
 ) {
   try {
+    await EmbyService.updateUserPolicy(embyUserId, true);
+
     // Calculate subscription end date
     const subscriptionEnd = new Date();
     subscriptionEnd.setMonth(subscriptionEnd.getMonth() + duration);
-
-    // Update Emby user policy
-    await updateEmbyUserPolicy(embyUserId, true);
 
     // Create transaction record
     await addDoc(collection(db, "transactions"), {
@@ -70,7 +70,8 @@ export async function deactivateSubscription(userId: string, embyUserId: string)
     });
 
     // Disable Emby user access
-    await updateEmbyUserPolicy(embyUserId, false);
+    await EmbyService.updateUserPolicy(embyUserId, false);
+
 
     return true;
   } catch (error) {
@@ -79,57 +80,30 @@ export async function deactivateSubscription(userId: string, embyUserId: string)
   }
 }
 
-export const updateEmbyUserPolicy = async (userId: string, enableAccess: boolean) => {
-  try {
-    const response = await fetch('/api/emby/enable-user', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        embyUserId: userId,
-      }),
-    });
 
-    if (!response.ok) {
-      throw new Error(`Failed to update Emby user policy: ${response.statusText}`);
-    }
-
-    return true;
-  } catch (error) {
-    console.error("Error updating Emby user policy:", error);
-    throw error;
-  }
-};
 
 export async function syncEmbyWithFirestore() {
   try {
-    // Get all users from Firestore
     const usersSnapshot = await getDocs(collection(db, "users"));
     
-    for (const userDoc of usersSnapshot.docs) {
+    const updates = usersSnapshot.docs.map(async (userDoc) => {
       const userData = userDoc.data();
-      const embyUserId = userData.embyUserId;
-      
-      if (!embyUserId) continue;
+      if (!userData.embyUserId) return;
 
-      // Check Emby user status
-      const embyStatus = await checkEmbyUserStatus(embyUserId);
+      const embyStatus = await EmbyService.getUserStatus(userData.embyUserId);
       const firestoreStatus = userData.subscriptionStatus;
 
-      // Sync if there's a mismatch
-      if (
-        (embyStatus && firestoreStatus !== "active") ||
-        (!embyStatus && firestoreStatus === "active")
-      ) {
+      if ((embyStatus && firestoreStatus !== "active") ||
+          (!embyStatus && firestoreStatus === "active")) {
         await updateDoc(doc(db, "users", userDoc.id), {
           subscriptionStatus: embyStatus ? "active" : "expired",
           subscriptionEnd: embyStatus ? userData.subscriptionEnd : null,
           plan: embyStatus ? userData.plan : null,
         });
       }
-    }
+    });
 
+    await Promise.all(updates);
     return true;
   } catch (error) {
     console.error("Error syncing Emby with Firestore:", error);
