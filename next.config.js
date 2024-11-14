@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: {
-    EMBY_SERVER_URL: process.env.EMBY_SERVER_URL,
-    EMBY_API_KEY: process.env.EMBY_API_KEY,
+    NEXT_PUBLIC_EMBY_URL: process.env.NEXT_PUBLIC_EMBY_URL,
+    NEXT_PUBLIC_EMBY_API_KEY: process.env.NEXT_PUBLIC_EMBY_API_KEY,
   },
   images: {
     domains: ['167.172.75.130', 'image.tmdb.org'],
