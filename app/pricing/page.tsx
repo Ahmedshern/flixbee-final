@@ -67,11 +67,11 @@ export default function PricingPage() {
                   className="h-full"
                 >
                   <Card className={`flex flex-col h-full border-2 min-h-[600px]  bg-background/60 ${
-                    plan.name === "Premium" 
+                    plan.name === "Basic" 
                       ? "border-primary shadow-lg relative bg-muted/50" 
                       : "hover:border-primary"
                     } transition-all`}>
-                    {plan.name === "Premium" && (
+                    {plan.name === "Basic" && (
                       <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                         <span className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
                           Most Popular
@@ -116,7 +116,7 @@ export default function PricingPage() {
                       <Button 
                         className="w-full h-12 text-base"
                         onClick={() => handleSubscribe(plan.name)}
-                        variant={plan.name === "Premium" ? "default" : "outline"}
+                        variant={plan.name === "Basic" ? "default" : "outline"}
                         size="lg"
                       >
                         {user ? "Subscribe Now" : "Get Started"}

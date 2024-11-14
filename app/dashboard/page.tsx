@@ -6,12 +6,14 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Settings, CreditCard } from "lucide-react";
+import { Loader2, Settings, CreditCard, Copy } from "lucide-react";
 import Link from "next/link";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { SubscriptionStatus } from "@/components/subscription-status";
 import { EmberBackground } from "@/components/EmberBackground";
 import { AnimatedButton } from "@/components/ui/animated-button";
+import { toast } from "@/hooks/use-toast";
+import Image from "next/image";
 
 interface UserData {
   subscriptionStatus: string;
@@ -65,43 +67,125 @@ export default function DashboardPage() {
           {/* Instructions Card */}
           <Card className="bg-black/60 border-zinc-800">
             <CardHeader>
-              <CardTitle className="text-lg md:text-xl">Installation Instructions</CardTitle>
-              <CardDescription>Follow these steps to start watching</CardDescription>
+              <CardTitle className="text-lg md:text-xl">Getting Started with BuzzPlay</CardTitle>
+              <CardDescription>Welcome to BuzzPlay! Follow these quick steps to set up your streaming experience:</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Steps */}
+              {/* Setup Steps */}
               <div className="space-y-4">
-                <h3 className="font-medium text-sm text-muted-foreground">Step by Step Guide:</h3>
-                <ol className="space-y-3 text-sm">
-                  <li>1. Install Emby</li>
-                  <li>2. Press &quot;Next&quot;</li>
-                  <li>3. Press &quot;Skip&quot;</li>
-                  <li>4. Add Host & Port</li>
+                <ol className="space-y-6">
+                  <li className="space-y-2">
+                    <h3 className="font-medium">1. Install Emby</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Download the Emby app from the App Store or Play Store.
+                    </p>
+                    <div className="mt-2">
+                      
+                    </div>
+                  </li>
+                  <li className="space-y-2">
+                    <h3 className="font-medium">2. Welcome Screen</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Open the app and click Next on the "Welcome to Emby" screen.
+                    </p>
+                    <div className="mt-2">
+                      <Image
+                        src="/images/emby-welcome.png"
+                        alt="Emby Welcome Screen"
+                        width={300}
+                        height={600}
+                        className="rounded-lg border border-zinc-800 mx-auto"
+                        priority
+                      />
+                    </div>
+                  </li>
+                  <li className="space-y-2">
+                    <h3 className="font-medium">3. Sign-In Screen</h3>
+                    <p className="text-sm text-muted-foreground">
+                      On the Emby Connect sign-in screen, select Skip (Emby Connect sign-in is not required).
+                    </p>
+                    <div className="mt-2">
+                      <Image
+                        src="/images/emby-signin.png"
+                        alt="Emby Sign-in Screen"
+                        width={300}
+                        height={600}
+                        className="rounded-lg border border-zinc-800 mx-auto"
+                        priority
+                      />
+                    </div>
+                  </li>
+                  <li className="space-y-2">
+                    <h3 className="font-medium">4. Add Server Details</h3>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Enter the following server information:
+                    </p>
+                    <div className="bg-black/40 p-3 rounded-lg space-y-2">
+                      <p className="text-sm flex items-center justify-between">
+                        <span>
+                          <span className="font-medium">Host:</span>{" "}
+                          <span className="text-muted-foreground">https://www.buzzplaymv.com</span>
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => {
+                            navigator.clipboard.writeText("https://www.buzzplaymv.com");
+                            toast({
+                              description: "Host URL copied to clipboard",
+                              duration: 2000,
+                            });
+                          }}
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </p>
+                      <p className="text-sm flex items-center justify-between">
+                        <span>
+                          <span className="font-medium">Port:</span>{" "}
+                          <span className="text-muted-foreground">123</span>
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => {
+                            navigator.clipboard.writeText("123");
+                            toast({
+                              description: "Port number copied to clipboard",
+                              duration: 2000,
+                            });
+                          }}
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </p>
+                    </div>
+                    <div className="mt-4">
+                      <Image
+                        src="/images/emby-connect.png"
+                        alt="Emby Connect Screen"
+                        width={300}
+                        height={600}
+                        className="rounded-lg border border-zinc-800 mx-auto"
+                        priority
+                      />
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Then, click Connect.
+                    </p>
+                  </li>
                 </ol>
-                <div className="space-y-2">
-                  <p className="text-sm">
-                    <span className="font-medium">Host:</span>{" "}
-                    <span className="text-muted-foreground">https://www.buzzplay.pw</span>
-                  </p>
-                  <p className="text-sm">
-                    <span className="font-medium">Port:</span>{" "}
-                    <span className="text-muted-foreground">443</span>
-                  </p>
-                </div>
               </div>
 
-              {/* Warning */}
-              <div className="text-red-500 text-sm">
-                <p>Read this before installing Emby on iOS</p>
-                <p className="text-muted-foreground mt-1 text-xs">
-                  If you see a message asking to pay for Emby premiere on iOS and Apple TV app 
-                  you will have to pay a one time unlock fee of 5 USD. We don&apos;t collect that. 
-                  It&apos;s collected by Emby via Apple&apos;s Appstore or Google Playstore&apos;s in-app purchase.
+              {/* Success Message */}
+              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4">
+                <p className="text-emerald-400 font-medium mb-2">You're all set!</p>
+                <p className="text-sm text-muted-foreground">
+                  Enjoy seamless streaming until your subscription ends. With your BuzzPlay subscription, 
+                  you also get access to Emby Premiere, giving you a premium streaming experience.
                 </p>
-              </div>
-
-              <div className="text-muted-foreground text-sm">
-                You can always stream via Safari or any other browser via https://www.buzzplay.pw
               </div>
 
               {/* App Buttons */}
