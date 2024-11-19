@@ -2,9 +2,30 @@ import { NextResponse } from 'next/server';
 import { EmbyService } from '@/lib/services/emby';
 import { getAuth } from 'firebase-admin/auth';
 import { adminDb } from '@/lib/firebase-admin';
+import { cookies } from 'next/headers';
+import { verifyAdminSession } from '@/lib/auth-admin';
 
 export async function POST(request: Request) {
   try {
+    // Verify admin session
+    const cookieStore = cookies();
+    const adminCookie = (await cookieStore).get('admin_session');
+    
+    if (!adminCookie) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const isAdmin = await verifyAdminSession(adminCookie.value);
+    if (!isAdmin) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const { userId, embyUserId } = await request.json();
     
     if (!userId || !embyUserId) {
@@ -21,7 +42,6 @@ export async function POST(request: Request) {
       if (error.code !== 'auth/user-not-found') {
         throw error;
       }
-      // If user not found in Auth, continue with other deletions
       console.warn('User not found in Firebase Auth:', userId);
     }
 
@@ -30,7 +50,6 @@ export async function POST(request: Request) {
       await EmbyService.deleteUser(embyUserId);
     } catch (error: any) {
       console.warn('Error deleting Emby user:', error);
-      // Continue if Emby user doesn't exist
     }
 
     // Delete from Firestore
