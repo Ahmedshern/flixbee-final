@@ -86,7 +86,7 @@ export default function DashboardPage() {
                   <li className="space-y-2">
                     <h3 className="font-medium">2. Welcome Screen</h3>
                     <p className="text-sm text-muted-foreground">
-                      Open the app and click Next on the "Welcome to Emby" screen.
+                      Open the app and click Next on the &quot;Welcome to Emby&quot; screen.
                     </p>
                     <div className="mt-2">
                       <Image
@@ -181,7 +181,7 @@ export default function DashboardPage() {
 
               {/* Success Message */}
               <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4">
-                <p className="text-emerald-400 font-medium mb-2">You're all set!</p>
+                <p className="text-emerald-400 font-medium mb-2">You&apos;re all set!</p>
                 <p className="text-sm text-muted-foreground">
                   Enjoy seamless streaming until your subscription ends. With your BuzzPlay subscription, 
                   you also get access to Emby Premiere, giving you a premium streaming experience.

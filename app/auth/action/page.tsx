@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { confirmPasswordReset } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -10,8 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Film, Loader2, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import { Suspense } from "react";
 
-export default function HandleResetPassword() {
+function ResetPasswordForm() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -73,102 +74,120 @@ export default function HandleResetPassword() {
 
   if (mode !== "resetPassword") {
     return (
-      <div className="container flex items-center justify-center min-h-screen">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-center text-red-500">Invalid Action</CardTitle>
-            <CardDescription className="text-center">
-              This password reset link is invalid or has expired.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex justify-center">
-            <Link href="/reset-password">
-              <Button>Request New Reset Link</Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-center text-red-500">Invalid Action</CardTitle>
+          <CardDescription className="text-center">
+            This password reset link is invalid or has expired.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex justify-center">
+          <Link href="/reset-password">
+            <Button>Request New Reset Link</Button>
+          </Link>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="container flex items-center justify-center min-h-screen">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center justify-center mb-4">
-            <Film className="h-12 w-12 text-primary" />
-          </div>
-          <CardTitle className="text-2xl text-center">Reset Password</CardTitle>
-          <CardDescription className="text-center">
-            Enter your new password below
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <div className="relative">
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="New Password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                  minLength={6}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </Button>
-              </div>
-              <div className="relative">
-                <Input
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Confirm New Password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  minLength={6}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </Button>
-              </div>
+    <Card className="w-full max-w-md">
+      <CardHeader className="space-y-1">
+        <div className="flex items-center justify-center mb-4">
+          <Film className="h-12 w-12 text-primary" />
+        </div>
+        <CardTitle className="text-2xl text-center">Reset Password</CardTitle>
+        <CardDescription className="text-center">
+          Enter your new password below
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder="New Password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                )}
+              </Button>
             </div>
-            <Button className="w-full" type="submit" disabled={loading}>
-              {loading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                "Reset Password"
-              )}
-            </Button>
-          </form>
-          <div className="mt-4 text-center text-sm">
-            Remember your password?{" "}
-            <Link href="/login" className="text-primary hover:underline">
-              Sign in
-            </Link>
+            <div className="relative">
+              <Input
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm New Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                )}
+              </Button>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+          <Button className="w-full" type="submit" disabled={loading}>
+            {loading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              "Reset Password"
+            )}
+          </Button>
+        </form>
+        <div className="mt-4 text-center text-sm">
+          Remember your password?{" "}
+          <Link href="/login" className="text-primary hover:underline">
+            Sign in
+          </Link>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function HandleResetPassword() {
+  return (
+    <div className="container flex items-center justify-center min-h-screen">
+      <Suspense fallback={
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-center">Loading...</CardTitle>
+            <CardDescription className="text-center">
+              Please wait while we verify your reset link.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center">
+            <Loader2 className="h-6 w-6 animate-spin" />
+          </CardContent>
+        </Card>
+      }>
+        <ResetPasswordForm />
+      </Suspense>
     </div>
   );
 } 
