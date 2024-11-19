@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { sendPasswordResetEmail } from "firebase/auth";
-import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Film, Loader2 } from "lucide-react";
+import axios from "axios";
 
 export default function ResetPasswordPage() {
   const [email, setEmail] = useState("");
@@ -20,16 +19,26 @@ export default function ResetPasswordPage() {
     setLoading(true);
 
     try {
-      await sendPasswordResetEmail(auth, email);
+      await axios.post('/api/auth/reset-password', { 
+        email: email.trim() 
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
       toast({
         title: "Reset email sent",
         description: "Check your email for password reset instructions.",
       });
+      
+      setEmail(""); // Clear the input after success
     } catch (error: any) {
+      console.error('Reset password error:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message,
+        description: error.response?.data?.message || "Failed to send reset email",
       });
     } finally {
       setLoading(false);
