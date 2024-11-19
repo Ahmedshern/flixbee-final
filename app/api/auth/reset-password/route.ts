@@ -4,8 +4,7 @@ import { sendPasswordResetEmail } from "firebase/auth";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { email } = body;
+    const { email } = await request.json();
 
     if (!email) {
       return NextResponse.json(
@@ -15,7 +14,7 @@ export async function POST(request: Request) {
     }
 
     const actionCodeSettings = {
-      url: `${process.env.NEXT_PUBLIC_APP_URL}/auth/action`,
+      url: `${process.env.NEXT_PUBLIC_APP_URL}/auth/action?email=${encodeURIComponent(email)}`,
       handleCodeInApp: true,
     };
 

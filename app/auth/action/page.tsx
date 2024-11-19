@@ -11,6 +11,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Film, Loader2, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { EmbyService } from "@/lib/services/emby";
 
 function ResetPasswordForm() {
   const [newPassword, setNewPassword] = useState("");
@@ -23,10 +26,11 @@ function ResetPasswordForm() {
   
   const oobCode = searchParams.get("oobCode");
   const mode = searchParams.get("mode");
+  const email = searchParams.get("email");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!oobCode) {
+    if (!oobCode || !email) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -55,7 +59,27 @@ function ResetPasswordForm() {
     
     setLoading(true);
     try {
-      await confirmPasswordReset(auth, oobCode, newPassword);
+      // Get user's Emby ID from Firestore
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", email));
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot.empty) {
+        throw new Error("User not found");
+      }
+
+      const userData = querySnapshot.docs[0].data();
+      
+      if (!userData.embyUserId) {
+        throw new Error("User not properly configured");
+      }
+
+      // Update both Firebase and Emby passwords
+      await Promise.all([
+        confirmPasswordReset(auth, oobCode, newPassword),
+        EmbyService.updatePassword(userData.embyUserId, newPassword)
+      ]);
+
       toast({
         title: "Password updated",
         description: "Your password has been successfully reset. Please log in with your new password.",
