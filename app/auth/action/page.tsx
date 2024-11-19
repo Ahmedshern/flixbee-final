@@ -74,11 +74,23 @@ function ResetPasswordForm() {
         throw new Error("User not properly configured");
       }
 
-      // Update both Firebase and Emby passwords
-      await Promise.all([
-        confirmPasswordReset(auth, oobCode, newPassword),
-        EmbyService.updatePassword(userData.embyUserId, newPassword)
-      ]);
+      // First reset Firebase password
+      await confirmPasswordReset(auth, oobCode, newPassword);
+      
+      // Then update Emby password separately to handle potential failures
+      try {
+        await EmbyService.updatePassword(userData.embyUserId, newPassword);
+      } catch (embyError) {
+        // Log the error but don't fail the overall password reset
+        console.error("Failed to sync Emby password:", embyError);
+        toast({
+          variant: "destructive",
+          title: "Partial Success", 
+          description: "Password reset successful, but failed to sync with media server. Please contact support.",
+        });
+        window.location.href = "/login";
+        return;
+      }
 
       toast({
         title: "Password updated",
