@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { confirmPasswordReset } from "firebase/auth";
+import { confirmPasswordReset, verifyPasswordResetCode } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,34 +74,47 @@ function ResetPasswordForm() {
         throw new Error("User not properly configured");
       }
 
-      // First reset Firebase password
+      // First verify if the oobCode is valid
+      try {
+        await verifyPasswordResetCode(auth, oobCode);
+      } catch (verifyError) {
+        toast({
+          variant: "destructive",
+          title: "Invalid or Expired Link",
+          description: "This password reset link has expired. Please request a new one.",
+        });
+        setTimeout(() => {
+          window.location.href = "/forgot-password";
+        }, 2000);
+        return;
+      }
+
+      // If verification passed, proceed with password reset
       await confirmPasswordReset(auth, oobCode, newPassword);
       
-      // Then update Emby password separately to handle potential failures
+      // Then update Emby password
       try {
         await EmbyService.updatePassword(userData.embyUserId, newPassword);
       } catch (embyError) {
-        // Log the error but don't fail the overall password reset
         console.error("Failed to sync Emby password:", embyError);
         toast({
           variant: "destructive",
           title: "Partial Success", 
           description: "Password reset successful, but failed to sync with media server. Please contact support.",
         });
-        window.location.href = "/login";
-        return;
       }
 
       toast({
-        title: "Password updated",
+        title: "Success",
         description: "Your password has been successfully reset. Please log in with your new password.",
       });
       window.location.href = "/login";
     } catch (error: any) {
+      console.error("Password update error:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to reset password",
+        description: error.message || "Failed to reset password. Please try again.",
       });
     } finally {
       setLoading(false);
