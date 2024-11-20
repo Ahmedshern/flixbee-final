@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Film, Loader2, Eye, EyeOff } from "lucide-react";
+import { Film, Loader2, Eye, EyeOff, XCircle } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { collection, query, where, getDocs } from "firebase/firestore";
@@ -28,6 +28,10 @@ function ResetPasswordForm() {
   const mode = searchParams.get("mode");
   const email = searchParams.get("email");
 
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isVerified, setIsVerified] = useState(false);
+
   useEffect(() => {
     console.log('Mode:', mode);
     console.log('OOB Code:', oobCode);
@@ -36,23 +40,37 @@ function ResetPasswordForm() {
 
   useEffect(() => {
     const verifyResetCode = async () => {
-      if (oobCode && mode === "resetPassword") {
-        try {
-          const email = await verifyPasswordResetCode(auth, oobCode);
-          console.log('Reset code verified successfully for:', email);
-        } catch (error: any) {
-          console.error('Reset code verification failed:', error);
-          toast({
-            variant: "destructive",
-            title: "Invalid Reset Link",
-            description: `Verification failed: ${error.message}`,
-          });
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const oobCode = params.get('oobCode');
+        
+        console.log('Verification attempt with params:', {
+          hasOobCode: !!oobCode,
+          mode: params.get('mode'),
+          hasApiKey: !!params.get('apiKey')
+        });
+
+        if (!oobCode) {
+          throw new Error('Missing reset code');
         }
+
+        // Try to verify the code first
+        const email = await verifyPasswordResetCode(auth, oobCode);
+        console.log('Code verified for email:', email);
+        
+        // Set verification success
+        setIsVerified(true);
+        setIsLoading(false);
+
+      } catch (error: any) {
+        console.error('Reset verification failed:', error);
+        setError(error.message || 'Invalid reset link');
+        setIsLoading(false);
       }
     };
-    
+
     verifyResetCode();
-  }, [oobCode, mode, toast]);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,30 +168,34 @@ function ResetPasswordForm() {
     }
   };
 
-  if (mode !== "resetPassword") {
+  if (isLoading) {
     return (
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-center text-red-500">Invalid Action</CardTitle>
-          <CardDescription className="text-center">
-            This password reset link is invalid or has expired.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex justify-center">
-          <Link href="/reset-password">
-            <Button>Request New Reset Link</Button>
-          </Link>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col items-center justify-center space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <p className="text-lg font-medium">Verifying your reset link...</p>
+      </div>
     );
   }
 
+  if (error || !isVerified) {
+    return (
+      <div className="flex flex-col items-center justify-center space-y-4">
+        <XCircle className="h-12 w-12 text-destructive" />
+        <h2 className="text-xl font-semibold">Reset Link Invalid</h2>
+        <p className="text-muted-foreground text-center">
+          {error || 'This reset link is invalid or has expired'}
+        </p>
+        <Link href="/forgot-password">
+          <Button>Request New Reset Link</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  // Only show the password reset form if verified
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="space-y-1">
-        <div className="flex items-center justify-center mb-4">
-          <Film className="h-12 w-12 text-primary" />
-        </div>
         <CardTitle className="text-2xl text-center">Reset Password</CardTitle>
         <CardDescription className="text-center">
           Enter your new password below
@@ -269,3 +291,7 @@ export default function HandleResetPassword() {
     </div>
   );
 } 
+
+function setIsVerified(arg0: boolean) {
+  throw new Error("Function not implemented.");
+}

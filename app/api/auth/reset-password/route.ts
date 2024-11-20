@@ -14,8 +14,8 @@ export async function POST(request: Request) {
     }
 
     const actionCodeSettings = {
-      url: `${process.env.NEXT_PUBLIC_APP_URL}/auth/action?email=${encodeURIComponent(email)}`,
-      handleCodeInApp: true,
+      url: 'https://buzzplaymv.com/auth/action',
+      handleCodeInApp: false
     };
 
     await sendPasswordResetEmail(auth, email, actionCodeSettings);
