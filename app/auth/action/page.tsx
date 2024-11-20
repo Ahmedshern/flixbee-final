@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { confirmPasswordReset, verifyPasswordResetCode } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -27,6 +27,32 @@ function ResetPasswordForm() {
   const oobCode = searchParams.get("oobCode");
   const mode = searchParams.get("mode");
   const email = searchParams.get("email");
+
+  useEffect(() => {
+    console.log('Mode:', mode);
+    console.log('OOB Code:', oobCode);
+    console.log('Full URL:', window.location.href);
+  }, [mode, oobCode]);
+
+  useEffect(() => {
+    const verifyResetCode = async () => {
+      if (oobCode && mode === "resetPassword") {
+        try {
+          const email = await verifyPasswordResetCode(auth, oobCode);
+          console.log('Reset code verified successfully for:', email);
+        } catch (error: any) {
+          console.error('Reset code verification failed:', error);
+          toast({
+            variant: "destructive",
+            title: "Invalid Reset Link",
+            description: `Verification failed: ${error.message}`,
+          });
+        }
+      }
+    };
+    
+    verifyResetCode();
+  }, [oobCode, mode, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +85,24 @@ function ResetPasswordForm() {
     
     setLoading(true);
     try {
+      // Verify the code first
+      let verifiedEmail;
+      try {
+        verifiedEmail = await verifyPasswordResetCode(auth, oobCode);
+        console.log('Verified email:', verifiedEmail);
+      } catch (verifyError: any) {
+        console.error('Verification error:', verifyError);
+        toast({
+          variant: "destructive",
+          title: "Invalid or Expired Link",
+          description: `Link verification failed: ${verifyError.message}`,
+        });
+        setTimeout(() => {
+          window.location.href = "/forgot-password";
+        }, 2000);
+        return;
+      }
+
       // Get user's Emby ID from Firestore
       const usersRef = collection(db, "users");
       const q = query(usersRef, where("email", "==", email));
@@ -72,21 +116,6 @@ function ResetPasswordForm() {
       
       if (!userData.embyUserId) {
         throw new Error("User not properly configured");
-      }
-
-      // First verify if the oobCode is valid
-      try {
-        await verifyPasswordResetCode(auth, oobCode);
-      } catch (verifyError) {
-        toast({
-          variant: "destructive",
-          title: "Invalid or Expired Link",
-          description: "This password reset link has expired. Please request a new one.",
-        });
-        setTimeout(() => {
-          window.location.href = "/forgot-password";
-        }, 2000);
-        return;
       }
 
       // If verification passed, proceed with password reset
