@@ -15,7 +15,7 @@ export async function POST(request: Request) {
 
     const actionCodeSettings = {
       url: 'https://buzzplaymv.com/auth/action',
-      handleCodeInApp: false
+      handleCodeInApp: true
     };
 
     await sendPasswordResetEmail(auth, email, actionCodeSettings);

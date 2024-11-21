@@ -1,80 +1,83 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { confirmPasswordReset, verifyPasswordResetCode } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Film, Loader2, Eye, EyeOff, XCircle } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import { Suspense } from "react";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import { EmbyService } from "@/lib/services/emby";
 
-function ResetPasswordForm() {
-  const [newPassword, setNewPassword] = useState("");
+export default function ActionPage() {
+  const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState(false);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
+  const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
+  
   const { toast } = useToast();
+  const router = useRouter();
   const searchParams = useSearchParams();
   
   const oobCode = searchParams.get("oobCode");
   const mode = searchParams.get("mode");
-  const email = searchParams.get("email");
-
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isVerified, setIsVerified] = useState(false);
 
   useEffect(() => {
-    console.log('Mode:', mode);
-    console.log('OOB Code:', oobCode);
-    console.log('Full URL:', window.location.href);
-  }, [mode, oobCode]);
+    async function verifyCode() {
+      console.log('Starting verification process...');
+      
+      if (!oobCode || mode !== "resetPassword") {
+        console.error('Invalid parameters:', { oobCode: !!oobCode, mode });
+        setVerificationError("Invalid reset link");
+        setVerifying(false);
+        return;
+      }
 
-  useEffect(() => {
-    const verifyResetCode = async () => {
       try {
-        const params = new URLSearchParams(window.location.search);
-        const oobCode = params.get('oobCode');
-        
-        console.log('Verification attempt with params:', {
-          hasOobCode: !!oobCode,
-          mode: params.get('mode'),
-          hasApiKey: !!params.get('apiKey')
+        // Log verification attempt
+        console.log('Attempting verification with:', {
+          mode,
+          oobCodePresent: !!oobCode,
+          oobCodeLength: oobCode?.length
         });
 
-        if (!oobCode) {
-          throw new Error('Missing reset code');
+        // Verify the reset code
+        const email = await verifyPasswordResetCode(auth, oobCode);
+        
+        if (!email) {
+          throw new Error('No email returned from verification');
         }
 
-        // Try to verify the code first
-        const email = await verifyPasswordResetCode(auth, oobCode);
-        console.log('Code verified for email:', email);
-        
-        // Set verification success
-        setIsVerified(true);
-        setIsLoading(false);
-
+        console.log('Verification successful for email:', email);
+        setVerifiedEmail(email);
+        setVerificationError(null);
       } catch (error: any) {
-        console.error('Reset verification failed:', error);
-        setError(error.message || 'Invalid reset link');
-        setIsLoading(false);
+        console.error('Verification failed:', {
+          message: error.message,
+          code: error.code,
+          stack: error.stack
+        });
+        setVerificationError(error.message || "This reset link is invalid or has expired");
+        setVerifiedEmail(null);
+      } finally {
+        setVerifying(false);
       }
-    };
+    }
 
-    verifyResetCode();
-  }, []);
+    verifyCode();
+  }, [oobCode, mode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!oobCode || !email) {
+    
+    if (!oobCode || !verifiedEmail) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -83,7 +86,7 @@ function ResetPasswordForm() {
       return;
     }
 
-    if (newPassword !== confirmPassword) {
+    if (password !== confirmPassword) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -92,72 +95,46 @@ function ResetPasswordForm() {
       return;
     }
 
-    if (newPassword.length < 6) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Password must be at least 6 characters long",
-      });
-      return;
-    }
-    
     setLoading(true);
+
     try {
-      // Verify the code first
-      let verifiedEmail;
-      try {
-        verifiedEmail = await verifyPasswordResetCode(auth, oobCode);
-        console.log('Verified email:', verifiedEmail);
-      } catch (verifyError: any) {
-        console.error('Verification error:', verifyError);
-        toast({
-          variant: "destructive",
-          title: "Invalid or Expired Link",
-          description: `Link verification failed: ${verifyError.message}`,
-        });
-        setTimeout(() => {
-          window.location.href = "/forgot-password";
-        }, 2000);
-        return;
-      }
-
-      // Get user's Emby ID from Firestore
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("email", "==", email));
-      const querySnapshot = await getDocs(q);
+      console.log('Attempting password reset for:', verifiedEmail);
       
-      if (querySnapshot.empty) {
-        throw new Error("User not found");
-      }
-
-      const userData = querySnapshot.docs[0].data();
+      // Reset Firebase password
+      await confirmPasswordReset(auth, oobCode, password);
+      console.log('Firebase password reset successful');
       
-      if (!userData.embyUserId) {
-        throw new Error("User not properly configured");
-      }
+      // Reset Emby password
+      console.log('Attempting to reset Emby password...');
+      const response = await fetch('/api/emby/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: verifiedEmail,
+          password: password,
+        }),
+      });
 
-      // If verification passed, proceed with password reset
-      await confirmPasswordReset(auth, oobCode, newPassword);
+      const data = await response.json();
       
-      // Then update Emby password
-      try {
-        await EmbyService.updatePassword(userData.embyUserId, newPassword);
-      } catch (embyError) {
-        console.error("Failed to sync Emby password:", embyError);
-        toast({
-          variant: "destructive",
-          title: "Partial Success", 
-          description: "Password reset successful, but failed to sync with media server. Please contact support.",
-        });
+      if (!response.ok) {
+        console.error('Emby password reset failed:', data);
+        throw new Error(data.error || 'Failed to reset Emby password');
       }
-
+      
+      console.log('Password reset successful for both Firebase and Emby');
       toast({
         title: "Success",
-        description: "Your password has been successfully reset. Please log in with your new password.",
+        description: "Your password has been reset successfully. Please log in with your new password.",
       });
-      window.location.href = "/login";
+
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
     } catch (error: any) {
-      console.error("Password update error:", error);
+      console.error('Password reset failed:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -168,130 +145,103 @@ function ResetPasswordForm() {
     }
   };
 
-  if (isLoading) {
+  // Loading state
+  if (verifying) {
     return (
-      <div className="flex flex-col items-center justify-center space-y-4">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <p className="text-lg font-medium">Verifying your reset link...</p>
+      <div className="container flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <p>Verifying reset link...</p>
+        </div>
       </div>
     );
   }
 
-  if (error || !isVerified) {
+  // Error state
+  if (verificationError || !verifiedEmail) {
     return (
-      <div className="flex flex-col items-center justify-center space-y-4">
-        <XCircle className="h-12 w-12 text-destructive" />
-        <h2 className="text-xl font-semibold">Reset Link Invalid</h2>
-        <p className="text-muted-foreground text-center">
-          {error || 'This reset link is invalid or has expired'}
-        </p>
-        <Link href="/forgot-password">
-          <Button>Request New Reset Link</Button>
-        </Link>
+      <div className="container flex items-center justify-center min-h-screen">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-2xl text-center">Invalid Reset Link</CardTitle>
+            <CardDescription className="text-center">
+              {verificationError || "Unable to verify reset link"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center">
+            <Link href="/reset-password">
+              <Button>Request New Reset Link</Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  // Only show the password reset form if verified
+  // Success state - show password reset form
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl text-center">Reset Password</CardTitle>
-        <CardDescription className="text-center">
-          Enter your new password below
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <div className="relative">
+    <div className="container flex items-center justify-center min-h-screen">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-2xl text-center">Reset Password</CardTitle>
+          <CardDescription className="text-center">
+            Enter your new password for {verifiedEmail}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-4">
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="New Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+
               <Input
-                type={showPassword ? "text" : "password"}
-                placeholder="New Password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-                minLength={6}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <Eye className="h-4 w-4 text-muted-foreground" />
-                )}
-              </Button>
-            </div>
-            <div className="relative">
-              <Input
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirm New Password"
+                type="password"
+                placeholder="Confirm Password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={6}
               />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                {showConfirmPassword ? (
-                  <EyeOff className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <Eye className="h-4 w-4 text-muted-foreground" />
-                )}
-              </Button>
             </div>
-          </div>
-          <Button className="w-full" type="submit" disabled={loading}>
-            {loading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              "Reset Password"
-            )}
-          </Button>
-        </form>
-        <div className="mt-4 text-center text-sm">
-          Remember your password?{" "}
-          <Link href="/login" className="text-primary hover:underline">
-            Sign in
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
-export default function HandleResetPassword() {
-  return (
-    <div className="container flex items-center justify-center min-h-screen">
-      <Suspense fallback={
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-center">Loading...</CardTitle>
-            <CardDescription className="text-center">
-              Please wait while we verify your reset link.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex justify-center">
-            <Loader2 className="h-6 w-6 animate-spin" />
-          </CardContent>
-        </Card>
-      }>
-        <ResetPasswordForm />
-      </Suspense>
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Resetting Password...
+                </>
+              ) : (
+                "Reset Password"
+              )}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
-} 
-
-function setIsVerified(arg0: boolean) {
-  throw new Error("Function not implemented.");
 }
