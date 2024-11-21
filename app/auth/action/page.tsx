@@ -19,7 +19,7 @@ function ActionPageContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [verifying, setVerifying] = useState(false);
+  const [verifying, setVerifying] = useState(true);
   const [verificationError, setVerificationError] = useState<string | null>(null);
   const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
   
@@ -42,14 +42,12 @@ function ActionPageContent() {
       }
 
       try {
-        // Log verification attempt
         console.log('Attempting verification with:', {
           mode,
           oobCodePresent: !!oobCode,
           oobCodeLength: oobCode?.length
         });
 
-        // Verify the reset code
         const email = await verifyPasswordResetCode(auth, oobCode);
         
         if (!email) {
@@ -146,7 +144,7 @@ function ActionPageContent() {
     }
   };
 
-  // Loading state
+  // Loading state - show this first
   if (verifying) {
     return (
       <div className="container flex items-center justify-center min-h-screen">
@@ -158,8 +156,8 @@ function ActionPageContent() {
     );
   }
 
-  // Error state
-  if (verificationError || !verifiedEmail) {
+  // Error state - only show if we're not verifying AND there's an error
+  if (!verifying && (verificationError || (!verifiedEmail && mode === "resetPassword"))) {
     return (
       <div className="container flex items-center justify-center min-h-screen">
         <Card className="w-full max-w-md">
@@ -216,14 +214,29 @@ function ActionPageContent() {
                 </Button>
               </div>
 
-              <Input
-                type="password"
-                placeholder="Confirm Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                minLength={6}
-              />
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Confirm Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
             </div>
 
             <Button 

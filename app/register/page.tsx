@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Film, Loader2, Eye, EyeOff } from "lucide-react";
-import styles from '@/styles/glow.module.css';
+
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -91,8 +91,7 @@ export default function RegisterPage() {
 
   return (
     <div className="container flex h-screen w-screen flex-col items-center justify-center">
-      <div className={styles.glowContainer}>
-              <Card className="w-[90%] max-w-md">
+      <Card className="w-[90%] max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
             <Film className="h-8 w-8 text-cyan" />
@@ -171,7 +170,6 @@ export default function RegisterPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
     </div>
   );
 }
