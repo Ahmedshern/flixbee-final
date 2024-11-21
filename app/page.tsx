@@ -83,8 +83,12 @@ export default function Home() {
         <div className="relative max-w-4xl mx-auto p-8 rounded-xl backdrop-blur-md bg-white/10 dark:bg-black/10 border border-white/20 dark:border-white/10 shadow-xl mt-16">
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
             <span className="text-black dark:text-white">Your Entertainment,</span>
-            <br />
-            <NeonText text="UNLEASHED" className="text-xl font-bold" />
+            <div className="mt-8 sm:mt-10 md:mt-5">
+              <NeonText 
+                text="UNLEASHED" 
+                className="font-bold leading-none" 
+              />
+            </div>
           </h1>
           
           <p className="mt-6 text-lg text-white">

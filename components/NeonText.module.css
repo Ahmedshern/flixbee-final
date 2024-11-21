@@ -6,38 +6,38 @@
 }
 
 .neonContainer {
+  
   font-family: 'baeno', sans-serif;
-  font-weight: 100;
-  letter-spacing: 0.05em;
+  font-weight: 200;
   display: flex;
   flex-flow: row;
   justify-content: center;
   color: #d9fdff;
   text-shadow: 0 0 2rem #00f0ff;
-  font-size: 2rem;
+  font-size: 4rem;
+  letter-spacing: 0.5rem;
+  width: 100%;
+  padding: 0 0.5rem;
 }
 
 @media (min-width: 640px) {
   .neonContainer {
-    font-size: 3rem;
+    font-size: 1.5rem;
+    letter-spacing: -0.15em;
   }
 }
 
 @media (min-width: 768px) {
   .neonContainer {
-    font-size: 4rem;
+    font-size: 2rem;
+    letter-spacing: -0.2em;
   }
 }
 
 @media (min-width: 1024px) {
   .neonContainer {
-    font-size: 5rem;
-  }
-}
-
-@media (min-width: 1280px) {
-  .neonContainer {
     font-size: 6rem;
+    letter-spacing: 0.05em;
   }
 }
 
@@ -46,37 +46,76 @@
 }
 
 .flicker {
-  transform: translate(-0.2rem, 1rem) rotate(10deg);
+  transform: translate(-0.1rem, 0.5rem) rotate(10deg);
   animation: flicker 2s ease-in-out infinite alternate;
+}
+
+@media (min-width: 768px) {
+  .flicker {
+    transform: translate(-0.2rem, 1rem) rotate(10deg);
+  }
 }
 
 @keyframes flicker {
   0%, 5% {
     opacity: 1;
-    transform: translate(-0.2rem, 1rem) rotate(10deg);
+    transform: translate(-0.1rem, 0.5rem) rotate(10deg);
   }
   5.5% {
     opacity: 0;
-    transform: translate(-0.2rem, 1rem) rotate(10deg);
+    transform: translate(-0.1rem, 0.5rem) rotate(10deg);
   }
   6%, 6.5% {
     opacity: 1;
-    transform: translate(-0.2rem, 1rem) rotate(10deg);
+    transform: translate(-0.1rem, 0.5rem) rotate(10deg);
   }
   7% {
     opacity: 0;
-    transform: translate(-0.2rem, 1rem) rotate(10deg);
+    transform: translate(-0.1rem, 0.5rem) rotate(10deg);
   }
   8% {
     opacity: 1;
-    transform: translate(-0.2rem, 1rem) rotate(10deg);
+    transform: translate(-0.1rem, 0.5rem) rotate(10deg);
   }
   50% {
     opacity: 1;
-    transform: translate(-0.2rem, 1rem) rotate(13deg);
+    transform: translate(-0.1rem, 0.5rem) rotate(13deg);
   }
   100% {
     opacity: 1;
-    transform: translate(-0.2rem, 1rem) rotate(10deg);
+    transform: translate(-0.1rem, 0.5rem) rotate(10deg);
+  }
+}
+
+@media (min-width: 768px) {
+  @keyframes flicker {
+    0%, 5% {
+      opacity: 1;
+      transform: translate(-0.2rem, 1rem) rotate(10deg);
+    }
+    5.5% {
+      opacity: 0;
+      transform: translate(-0.2rem, 1rem) rotate(10deg);
+    }
+    6%, 6.5% {
+      opacity: 1;
+      transform: translate(-0.2rem, 1rem) rotate(10deg);
+    }
+    7% {
+      opacity: 0;
+      transform: translate(-0.2rem, 1rem) rotate(10deg);
+    }
+    8% {
+      opacity: 1;
+      transform: translate(-0.2rem, 1rem) rotate(10deg);
+    }
+    50% {
+      opacity: 1;
+      transform: translate(-0.2rem, 1rem) rotate(13deg);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(-0.2rem, 1rem) rotate(10deg);
+    }
   }
 } 

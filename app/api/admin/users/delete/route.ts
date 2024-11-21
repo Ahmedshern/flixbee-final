@@ -18,8 +18,8 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     // Verify admin session
-    const cookieStore = cookies();
-    const adminCookie = cookieStore.get('admin_session');
+    const cookieStore = await cookies();
+    const adminCookie = await cookieStore.get('admin_session');
     
     if (!adminCookie?.value) {
       return NextResponse.json(
