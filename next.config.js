@@ -3,6 +3,8 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_EMBY_URL: process.env.NEXT_PUBLIC_EMBY_URL,
     NEXT_PUBLIC_EMBY_API_KEY: process.env.NEXT_PUBLIC_EMBY_API_KEY,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    EMAIL_FROM: process.env.EMAIL_FROM || 'noreply@buzzplaymv.com',
   },
   images: {
     domains: ['167.172.75.130', 'image.tmdb.org'],

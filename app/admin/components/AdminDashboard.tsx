@@ -35,6 +35,7 @@ interface User {
   subscriptionEnd: string | null;
   plan: string | null;
   paymentReceipts?: string[];
+  isLoading?: boolean;
 }
 
 export default function AdminDashboard() {

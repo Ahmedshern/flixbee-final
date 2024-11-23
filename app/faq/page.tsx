@@ -15,7 +15,7 @@ const faqs = [
   },
   {
     question: "How much does BuzzPlay cost?",
-    answer: "Enjoy BuzzPlay on your smartphone, tablet, smart TV, laptop, or streaming device for one affordable monthly fee. Plans range from MVR 149 to MVR 219, with no additional charges or contracts—pay only for the plan that fits your needs."
+    answer: "Enjoy BuzzPlay on your smartphone, tablet, smart TV, laptop, or streaming device for one affordable monthly fee. Plans range from MVR 89 to MVR 219, with no additional charges or contracts—pay only for the plan that fits your needs. Our mobile-only plan starts at MVR 89 for single-device streaming."
   },
   {
     question: "Can I set my subscription to auto-renew?",

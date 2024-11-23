@@ -125,9 +125,14 @@ export class EmbyService {
   }
 
   static async getUserStatus(userId: string): Promise<boolean> {
-    const response = await this.fetchEmby(`/Users/${userId}`);
-    const userData = await response.json();
-    return !userData.Policy?.IsDisabled;
+    try {
+      const response = await this.fetchEmby(`/Users/${userId}`);
+      const userData = await response.json();
+      return !userData.Policy?.IsDisabled;
+    } catch (error) {
+      console.error('Error getting user status:', error);
+      throw new EmbyError('Failed to get user status');
+    }
   }
 
   static async updateUserPolicy(userId: string, isEnabled: boolean, deviceLimit: number = 2) {

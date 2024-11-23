@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { EmbyService } from '@/lib/services/emby';
 import { adminDb } from '@/lib/firebase-admin';
 import { plans } from '@/lib/config/plans';
+import { NotificationService } from '@/lib/services/notification';
 
 export async function POST(request: Request) {
   try {
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
     // Create transaction record
     await adminDb.collection("transactions").add({
       userId,
-      plan: normalizedPlanName, // Use normalized plan name
+      plan: normalizedPlanName,
       duration,
       amount,
       date: new Date().toISOString(),
@@ -53,6 +54,17 @@ export async function POST(request: Request) {
       deviceLimit: selectedPlan.deviceLimit, // Store device limit
       updatedAt: new Date().toISOString()
     });
+
+    // After successful activation
+    await NotificationService.sendSubscriptionNotification(
+      userId,
+      'subscription_activated',
+      {
+        duration,
+        plan,
+        amount
+      }
+    );
 
     return NextResponse.json({ 
       success: true,

@@ -15,7 +15,7 @@ export async function POST(request: Request) {
 
     // Calculate subscription end date
     const subscriptionEnd = new Date();
-    subscriptionEnd.setDate(subscriptionEnd.getDate() + duration);
+    subscriptionEnd.setMonth(subscriptionEnd.getMonth() + duration);
 
     // Enable Emby user access
     await EmbyService.updateUserPolicy(embyUserId, true);

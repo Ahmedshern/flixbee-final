@@ -20,6 +20,9 @@ interface UserData {
   subscriptionEnd: string | null;
   plan?: string;
   duration?: number;
+  embyUserId?: string;
+  email?: string;
+  deviceLimit?: number;
 }
 
 export default function DashboardPage() {

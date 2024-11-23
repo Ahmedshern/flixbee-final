@@ -66,13 +66,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
-      </head>
-      <body className={inter.className}>
-        <ThemeProvider>
-          <ErrorBoundary>
+    <html lang="en">
+      <body>
+        <ErrorBoundary>
+          <ThemeProvider>
             <AuthProvider>
               <div className="relative min-h-screen flex flex-col">
                 <SiteHeader />
@@ -81,8 +78,8 @@ export default function RootLayout({
               </div>
               <Toaster />
             </AuthProvider>
-          </ErrorBoundary>
-        </ThemeProvider>
+          </ThemeProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
