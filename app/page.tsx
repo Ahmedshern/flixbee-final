@@ -10,7 +10,6 @@ import Link from "next/link";
 import { AnimatedGradientText } from "@/components/AnimatedGradientText";
 import { AnimatedButton } from "@/components/ui/animated-button";
 import { StarryBackground } from '@/components/StarryBackground';
-import { NeonText } from "@/components/NeonText";
 
 const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/original";
@@ -84,10 +83,9 @@ export default function Home() {
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
             <span className="text-black dark:text-white">Your Entertainment,</span>
             <div className="mt-8 sm:mt-10 md:mt-5">
-              <NeonText 
-                text="UNLEASHED" 
-                className="font-bold leading-none" 
-              />
+              <span className="text-cyan font-bold">
+                UNLEASHED
+              </span>
             </div>
           </h1>
           
