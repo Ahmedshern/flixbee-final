@@ -15,6 +15,7 @@ export default function PricingPage() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [selectedDurations, setSelectedDurations] = useState({
+    Mobile: 1,
     Basic: 1,
     Standard: 1,
     Premium: 1,
@@ -23,6 +24,7 @@ export default function PricingPage() {
   useEffect(() => {
     setMounted(true);
     setSelectedDurations({
+      Mobile: 1,
       Basic: 1,
       Standard: 1,
       Premium: 1,

@@ -18,6 +18,10 @@ const faqs = [
     answer: "Enjoy BuzzPlay on your smartphone, tablet, smart TV, laptop, or streaming device for one affordable monthly fee. Plans range from MVR 89 to MVR 219, with no additional charges or contracts—pay only for the plan that fits your needs. Our mobile-only plan starts at MVR 89 for single-device streaming."
   },
   {
+    question: "Can I upgrade or downgrade my subscription?",
+    answer: "Yes! BuzzPlay allows you to upgrade or downgrade your subscription with ease. When you upgrade to a higher-priced plan, the new plan takes effect immediately so you can start enjoying the added features right away. Any remaining days on your current package will stay active, and your new plan will be effective from now onward. If you choose to downgrade to a lower-priced plan, the change will take effect on your next billing date. You can continue to enjoy the features of your current higher-priced plan until then. If you need help with upgrading or downgrading your subscription, feel free to reach out to us. We're here to assist!"
+  },
+  {
     question: "Can I set my subscription to auto-renew?",
     answer: "Currently, we don't offer an auto-renew feature. However, you can choose from flexible subscription plans, including 1-month, 3-month, or 6-month commitments, to suit your preference."
   },

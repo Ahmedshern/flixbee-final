@@ -8,6 +8,12 @@ export async function POST(request: Request) {
   try {
     const { userId, embyUserId, plan, duration, amount } = await request.json();
     
+    // Get current user subscription
+    const userDoc = await adminDb.collection('users').doc(userId).get();
+    const userData = userDoc.data();
+    const currentPlan = userData?.plan;
+    const isUpgrade = currentPlan && userData?.subscriptionStatus === 'active';
+
     if (!userId || !embyUserId || !plan || !duration || !amount) {
       return NextResponse.json(
         { error: 'Missing required fields' },
@@ -20,16 +26,15 @@ export async function POST(request: Request) {
     const selectedPlan = plans.find(p => p.name === normalizedPlanName);
     
     if (!selectedPlan) {
-      console.error('Plan not found:', { 
-        receivedPlan: plan, 
-        normalizedPlan: normalizedPlanName, 
-        availablePlans: plans.map(p => p.name) 
-      });
       throw new Error(`Invalid plan selected: ${plan}`);
     }
 
     // Calculate subscription end date
     const subscriptionEnd = new Date();
+    if (isUpgrade && userData.subscriptionEnd) {
+      // If upgrading, add duration to existing end date
+      subscriptionEnd.setTime(new Date(userData.subscriptionEnd).getTime());
+    }
     subscriptionEnd.setMonth(subscriptionEnd.getMonth() + duration);
 
     // Enable Emby user access with plan-specific device limit
@@ -41,6 +46,8 @@ export async function POST(request: Request) {
       plan: normalizedPlanName,
       duration,
       amount,
+      type: isUpgrade ? 'upgrade' : 'new',
+      previousPlan: currentPlan || null,
       date: new Date().toISOString(),
       status: "completed"
     });
@@ -49,22 +56,18 @@ export async function POST(request: Request) {
     await adminDb.collection('users').doc(userId).update({
       subscriptionStatus: 'active',
       subscriptionEnd: subscriptionEnd.toISOString(),
-      plan: normalizedPlanName, // Use normalized plan name
+      plan: normalizedPlanName,
       duration: duration,
-      deviceLimit: selectedPlan.deviceLimit, // Store device limit
       updatedAt: new Date().toISOString()
     });
 
-    // After successful activation
-    await NotificationService.sendSubscriptionNotification(
-      userId,
-      'subscription_activated',
-      {
-        duration,
-        plan,
-        amount
-      }
-    );
+    // Send notification
+    await NotificationService.sendNotification(userId, 'subscription_activated', {
+      duration,
+      plan: normalizedPlanName,
+      amount,
+      isUpgrade
+    });
 
     return NextResponse.json({ 
       success: true,

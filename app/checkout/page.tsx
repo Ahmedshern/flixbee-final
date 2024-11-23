@@ -1,53 +1,86 @@
 "use client";
 
-import React, { Suspense, useMemo } from "react";
-import { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { doc, getDoc } from "firebase/firestore";
+import { ref, uploadBytes } from "firebase/storage";
+import { db, storage } from "@/lib/firebase";
+import { plans } from "@/lib/config/plans";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { doc, updateDoc, getDoc } from "firebase/firestore";
-import { ref, uploadBytes } from "firebase/storage";
-import { db, storage } from "@/lib/firebase";
-import { useAuthContext } from "@/components/auth-provider";
-import { useRouter } from "next/navigation";
-import { Loader2, Upload } from "lucide-react";
-import { activateSubscription } from "@/lib/subscription";
-import { plans } from "@/lib/config/plans";
+import { ArrowLeft, Upload } from "lucide-react";
+import Link from "next/link";
 
 function CheckoutPageContent() {
-  const searchParams = useSearchParams();
-  const planName = searchParams.get("plan");
-  const duration = parseInt(searchParams.get("duration") || "1");
-  const { user } = useAuthContext();
+  const { user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  
   const [loading, setLoading] = useState(false);
   const [receipt, setReceipt] = useState<File | null>(null);
+  const [currentPlan, setCurrentPlan] = useState<any>(null);
 
-  // Calculate total price
-  const totalPrice = useMemo(() => {
-    const selectedPlan = plans.find(p => p.name.toLowerCase() === planName);
-    if (!selectedPlan) return 0;
+  const planName = searchParams.get("plan");
+  const duration = parseInt(searchParams.get("duration") || "1");
 
-    const pricePerMonth = duration > 1 
-      ? selectedPlan.specialOffers[duration as keyof typeof selectedPlan.specialOffers] 
-      : selectedPlan.price;
+  const selectedPlan = plans.find(
+    (p) => p.name.toLowerCase() === planName?.toLowerCase()
+  );
 
-    return pricePerMonth * duration;
-  }, [planName, duration]);
+  // Calculate price based on duration and special offers
+  const basePrice = selectedPlan?.price || 0;
+  const specialPrice = selectedPlan?.specialOffers?.[duration as keyof typeof selectedPlan.specialOffers];
+  const pricePerMonth = specialPrice || basePrice;
+  const totalPrice = pricePerMonth * duration;
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setReceipt(e.target.files[0]);
+  useEffect(() => {
+    if (user) {
+      // Fetch current subscription details
+      const fetchCurrentPlan = async () => {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        const userData = userDoc.data();
+        if (userData?.subscriptionStatus === "active") {
+          setCurrentPlan({
+            name: userData.plan,
+            endDate: userData.subscriptionEnd,
+            duration: userData.duration
+          });
+        }
+      };
+      fetchCurrentPlan();
     }
-  };
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !receipt) return;
+    if (!user || !receipt || !planName || !duration) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Missing required information. Please check all fields.",
+      });
+      return;
+    }
+
+    // Validate plan upgrade
+    if (currentPlan) {
+      const currentPlanConfig = plans.find(p => p.name === currentPlan.name);
+      const newPlanConfig = plans.find(p => p.name === planName);
+      
+      if (currentPlanConfig && newPlanConfig && currentPlanConfig.price >= newPlanConfig.price) {
+        toast({
+          variant: "destructive",
+          title: "Invalid Plan Change",
+          description: "You can only upgrade to a higher-tier plan. Please select a different plan.",
+        });
+        return;
+      }
+    }
 
     setLoading(true);
     try {
@@ -64,8 +97,8 @@ function CheckoutPageContent() {
       await uploadBytes(receiptRef, receipt);
 
       // Normalize plan name to match configuration
-      const normalizedPlanName = (planName ?? 'basic').charAt(0).toUpperCase() + 
-        (planName ?? 'basic').slice(1).toLowerCase();
+      const normalizedPlanName = planName.charAt(0).toUpperCase() + 
+        planName.slice(1).toLowerCase();
 
       // Activate subscription through API
       const response = await fetch('/api/subscription/activate', {
@@ -78,7 +111,8 @@ function CheckoutPageContent() {
           embyUserId: userData.embyUserId,
           plan: normalizedPlanName,
           duration: duration,
-          amount: totalPrice
+          amount: totalPrice,
+          isUpgrade: !!currentPlan
         })
       });
 
@@ -88,8 +122,10 @@ function CheckoutPageContent() {
       }
 
       toast({
-        title: "Subscription activated!",
-        description: `Your ${duration}-month ${normalizedPlanName} subscription has been activated.`,
+        title: currentPlan ? "Plan Upgraded!" : "Subscription Activated!",
+        description: currentPlan 
+          ? `Your subscription has been upgraded to the ${duration}-month ${normalizedPlanName} plan.`
+          : `Your ${duration}-month ${normalizedPlanName} subscription has been activated.`,
       });
 
       router.push("/dashboard");
@@ -106,71 +142,93 @@ function CheckoutPageContent() {
   };
 
   return (
-    <div className="container py-16">
-      <Card className="max-w-md mx-auto">
+    <div className="container max-w-xl py-8 px-4 md:py-12">
+      <Button variant="ghost" asChild className="mb-6 gap-2">
+        <Link href="/pricing">
+          <ArrowLeft className="h-4 w-4" />
+          Back to Plans
+        </Link>
+      </Button>
+
+      <Card className="backdrop-blur-sm bg-black/40 border-zinc-800">
         <CardHeader>
-          <CardTitle>Complete Your Purchase</CardTitle>
+          <CardTitle>
+            {currentPlan ? "Upgrade Subscription" : "Complete Your Subscription"}
+          </CardTitle>
           <CardDescription>
-            Please transfer the payment and upload your receipt to activate your subscription
+            {currentPlan 
+              ? `Upgrading from ${currentPlan.name} to ${selectedPlan?.name} plan`
+              : `Activating ${selectedPlan?.name} plan for ${duration} month${duration > 1 ? 's' : ''}`
+            }
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Order Summary */}
-          <div className="mb-6 space-y-2 p-4 rounded-lg bg-black/20 backdrop-blur-sm border border-white/10">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Plan</span>
-              <span className="font-medium capitalize">{planName}</span>
+          {/* Current Plan Info (if upgrading) */}
+          {currentPlan && (
+            <div className="mb-6 p-4 rounded-lg bg-secondary/50">
+              <h3 className="font-medium mb-2">Current Subscription</h3>
+              <p className="text-sm text-muted-foreground">
+                {currentPlan.name} plan active until{" "}
+                {new Date(currentPlan.endDate).toLocaleDateString()}
+              </p>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Duration</span>
-              <span className="font-medium">{duration} {duration === 1 ? 'month' : 'months'}</span>
-            </div>
-            <div className="pt-2 border-t border-white/10 flex justify-between items-center">
-              <span className="font-medium">Total Amount</span>
-              <span className="text-lg font-bold text-emerald-400">MVR {totalPrice.toFixed(2)}</span>
-            </div>
-          </div>
+          )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <h3 className="text-lg font-medium">Bank Transfer Details</h3>
-              <div className="rounded-md bg-cyan/60 p-4">
-                <p>Bank: Bank of Maldives</p>
-                <p>Account Name: BuzzPlay Entertainment</p>
-                <p>Account Number: 7730000123456</p>
-                <p>Reference: {user?.uid?.slice(0, 8)}</p>
+          {/* Payment Details */}
+          <div className="space-y-6">
+            <div>
+              <h3 className="font-medium mb-2">Payment Details</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span>Plan Price</span>
+                  <span>MVR {pricePerMonth}/month</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Duration</span>
+                  <span>{duration} months</span>
+                </div>
+                <div className="flex justify-between font-medium pt-2 border-t">
+                  <span>Total Amount</span>
+                  <span>MVR {totalPrice}</span>
+                </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="receipt">Upload Payment Receipt</Label>
-              <Input
-                id="receipt"
-                type="file"
-                accept="image/*,.pdf"
-                onChange={handleFileChange}
-                required
-              />
-            </div>
+            {/* Upload Receipt */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="receipt">Upload Payment Receipt</Label>
+                <Input
+                  id="receipt"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setReceipt(e.target.files?.[0] || null)}
+                  className="cursor-pointer"
+                  required
+                />
+              </div>
 
-            <Button 
-              type="submit" 
-              className="w-full bg-cyan hover:bg-cyan/70" 
-              disabled={loading || !receipt}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing
-                </>
-              ) : (
-                <>
-                  <Upload className="mr-2 h-4 w-4" />
-                  Submit Payment
-                </>
-              )}
-            </Button>
-          </form>
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={loading || !receipt}
+              >
+                {loading ? (
+                  "Processing..."
+                ) : currentPlan ? (
+                  <>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Confirm Upgrade
+                  </>
+                ) : (
+                  <>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Activate Subscription
+                  </>
+                )}
+              </Button>
+            </form>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -178,9 +236,18 @@ function CheckoutPageContent() {
 }
 
 export default function CheckoutPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <CheckoutPageContent />
-    </Suspense>
-  );
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user) {
+    return null;
+  }
+
+  return <CheckoutPageContent />;
 }

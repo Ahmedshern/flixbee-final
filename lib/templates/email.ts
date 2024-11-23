@@ -46,7 +46,7 @@ export const emailTemplates: Record<NotificationType, (data: any) => Notificatio
           <h2>Welcome to BuzzPlay!</h2>
           <p>Your ${data.duration}-month subscription has been successfully activated.</p>
           <p>Start watching now and enjoy unlimited access to our content library.</p>
-          <a href="https://buzzplaymv.com/browse" style="background-color: #22c55e; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+          <a href="https://buzzplaymv.com/" style="background-color: #22c55e; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
             Start Watching
           </a>
         </div>
@@ -79,7 +79,7 @@ export const emailTemplates: Record<NotificationType, (data: any) => Notificatio
           <h2>Payment Failed</h2>
           <p>Your payment of ${data.amount} could not be processed.</p>
           <p>Please try again or contact support if you need assistance.</p>
-          <a href="https://buzzplaymv.com/billing" style="background-color: #22c55e; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+          <a href="https://buzzplaymv.com/dashboard" style="background-color: #22c55e; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
             Retry Payment
           </a>
         </div>
