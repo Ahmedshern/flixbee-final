@@ -135,7 +135,12 @@ export class EmbyService {
     }
   }
 
-  static async updateUserPolicy(userId: string, isEnabled: boolean, deviceLimit: number = 2) {
+  static async updateUserPolicy(
+    userId: string, 
+    isEnabled: boolean, 
+    deviceLimit: number = 2,
+    maxStreamingBitrate: number = 1080000000 // Default to 1080p
+  ) {
     await this.fetchEmby(`/Users/${userId}/Policy`, {
       method: 'POST',
       body: JSON.stringify({
@@ -154,7 +159,20 @@ export class EmbyService {
         EnableAllDevices: isEnabled,
         EnableAllChannels: isEnabled,
         EnableAllFolders: isEnabled,
-        SimultaneousStreamLimit: isEnabled ? deviceLimit : 0
+        SimultaneousStreamLimit: isEnabled ? deviceLimit : 0,
+        RemoteClientBitrateLimit: maxStreamingBitrate,
+        MaxStreamingBitrate: maxStreamingBitrate,
+        MaxStaticBitrate: maxStreamingBitrate,
+        MaxStaticRemoteQuality: maxStreamingBitrate,
+        // Quality settings
+        QualityOptions: {
+          MaxStreamingBitrate: maxStreamingBitrate,
+          MaxStaticBitrate: maxStreamingBitrate,
+          MaxStaticRemoteQuality: maxStreamingBitrate,
+          EnableAudioPlaybackTranscoding: true,
+          EnableVideoPlaybackTranscoding: true,
+          EnablePlaybackRemuxing: true
+        }
       })
     });
   }

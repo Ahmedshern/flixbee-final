@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
-import { EmbyService } from '@/lib/services/emby';
 import { adminDb } from '@/lib/firebase-admin';
+import { EmbyService } from '@/lib/services/emby';
 import { plans } from '@/lib/config/plans';
-import { NotificationService } from '@/lib/services/notification';
 
 export async function POST(request: Request) {
   try {
@@ -37,44 +36,38 @@ export async function POST(request: Request) {
     }
     subscriptionEnd.setMonth(subscriptionEnd.getMonth() + duration);
 
-    // Enable Emby user access with plan-specific device limit
-    await EmbyService.updateUserPolicy(embyUserId, true, selectedPlan.deviceLimit);
+    // Set bitrate based on plan type
+    let maxStreamingBitrate;
+    if (selectedPlan.name.toLowerCase() === 'mobile') {
+      maxStreamingBitrate = 480000000; // 480p
+    } else {
+      maxStreamingBitrate = 1080000000; // 1080p
+    }
 
-    // Create transaction record
-    await adminDb.collection("transactions").add({
-      userId,
-      plan: normalizedPlanName,
-      duration,
-      amount,
-      type: isUpgrade ? 'upgrade' : 'new',
-      previousPlan: currentPlan || null,
-      date: new Date().toISOString(),
-      status: "completed"
-    });
+    // Enable Emby user access with plan-specific settings
+    await EmbyService.updateUserPolicy(
+      embyUserId, 
+      true, 
+      selectedPlan.deviceLimit,
+      maxStreamingBitrate
+    );
 
-    // Update user subscription
+    // Update user document in Firestore
     await adminDb.collection('users').doc(userId).update({
+      plan: normalizedPlanName,
       subscriptionStatus: 'active',
       subscriptionEnd: subscriptionEnd.toISOString(),
-      plan: normalizedPlanName,
       duration: duration,
-      updatedAt: new Date().toISOString()
+      lastPayment: {
+        amount: amount,
+        date: new Date().toISOString(),
+        plan: normalizedPlanName
+      }
     });
 
-    // Send notification
-    await NotificationService.sendNotification(userId, 'subscription_activated', {
-      duration,
-      plan: normalizedPlanName,
-      amount,
-      isUpgrade
-    });
-
-    return NextResponse.json({ 
-      success: true,
-      subscriptionEnd: subscriptionEnd.toISOString()
-    });
+    return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error('Error activating subscription:', error);
+    console.error('Error in subscription activation:', error);
     return NextResponse.json(
       { error: error.message || 'Failed to activate subscription' },
       { status: 500 }
