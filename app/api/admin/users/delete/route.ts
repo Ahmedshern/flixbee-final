@@ -3,7 +3,6 @@ import { EmbyService } from '@/lib/services/emby';
 import { getAuth } from 'firebase-admin/auth';
 import { adminDb } from '@/lib/firebase-admin';
 import { cookies } from 'next/headers';
-import { verifyAdminSession } from '@/lib/auth-admin';
 
 // Define the expected request body type
 interface DeleteUserRequest {
@@ -17,19 +16,11 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify admin session
+    // Check for admin cookie
     const cookieStore = await cookies();
-    const adminCookie = await cookieStore.get('admin_session');
+    const adminLoggedIn = cookieStore.get('adminLoggedIn');
     
-    if (!adminCookie?.value) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const isAdmin = await verifyAdminSession(adminCookie.value);
-    if (!isAdmin) {
+    if (!adminLoggedIn || adminLoggedIn.value !== 'true') {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -37,8 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse request body
-    const body = await request.json() as DeleteUserRequest;
-    const { userId, embyUserId } = body;
+    const { userId, embyUserId } = await request.json();
     
     if (!userId || !embyUserId) {
       return NextResponse.json(
@@ -53,34 +43,24 @@ export async function POST(request: NextRequest) {
     } catch (error: any) {
       if (error.code !== 'auth/user-not-found') {
         console.error('Error deleting Firebase user:', error);
-      } else {
-        console.warn('User not found in Firebase Auth:', userId);
       }
     }
 
     // Delete from Emby
     try {
       await EmbyService.deleteUser(embyUserId);
-    } catch (error: any) {
+    } catch (error) {
       console.warn('Error deleting Emby user:', error);
     }
 
     // Delete from Firestore
-    try {
-      await adminDb.collection('users').doc(userId).delete();
-    } catch (error: any) {
-      console.error('Error deleting Firestore document:', error);
-      throw error;
-    }
+    await adminDb.collection('users').doc(userId).delete();
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('Error in delete user route:', error);
     return NextResponse.json(
-      { 
-        error: 'Failed to delete user',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      },
+      { error: error.message || 'Failed to delete user' },
       { status: 500 }
     );
   }

@@ -4,15 +4,15 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { doc, getDoc } from "firebase/firestore";
-import { ref, uploadBytes } from "firebase/storage";
+import { doc, getDoc, collection, addDoc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "@/lib/firebase";
 import { plans } from "@/lib/config/plans";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Upload } from "lucide-react";
+import { ArrowLeft, Upload, Check } from "lucide-react";
 import Link from "next/link";
 
 function CheckoutPageContent() {
@@ -92,15 +92,29 @@ function CheckoutPageContent() {
         throw new Error("Emby user ID not found");
       }
 
-      // Upload receipt
-      const receiptRef = ref(storage, `receipts/${user.uid}/${Date.now()}_${receipt.name}`);
+      // Upload receipt to Storage
+      const timestamp = new Date().toISOString();
+      const receiptRef = ref(storage, `receipts/${user.uid}/${timestamp}_${receipt.name}`);
       await uploadBytes(receiptRef, receipt);
+      const receiptUrl = await getDownloadURL(receiptRef);
 
-      // Normalize plan name to match configuration
-      const normalizedPlanName = planName.charAt(0).toUpperCase() + 
-        planName.slice(1).toLowerCase();
+      // Add receipt to Firestore subcollection
+      const receiptData = {
+        url: receiptUrl,
+        date: timestamp,
+        uploadDate: timestamp,
+        amount: `MVR ${totalPrice}`,
+        planName: selectedPlan?.name,
+        status: 'pending',
+      };
 
-      // Activate subscription through API
+      const receiptsCollectionRef = collection(db, 'users', user.uid, 'receipts');
+      await addDoc(receiptsCollectionRef, receiptData);
+
+      // Normalize plan name for consistency
+      const normalizedPlanName = selectedPlan?.name.toLowerCase();
+
+      // Call the subscription API
       const response = await fetch('/api/subscription/activate', {
         method: 'POST',
         headers: {
@@ -130,7 +144,7 @@ function CheckoutPageContent() {
 
       router.push("/dashboard");
     } catch (error: any) {
-      console.error("Error processing subscription:", error);
+      console.error('Subscription error:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -141,6 +155,9 @@ function CheckoutPageContent() {
     }
   };
 
+  // Format price with MVR
+  const formatPrice = (price: number) => `MVR ${price.toLocaleString()}`;
+
   return (
     <div className="container max-w-xl py-8 px-4 md:py-12">
       <Button variant="ghost" asChild className="mb-6 gap-2">
@@ -150,87 +167,120 @@ function CheckoutPageContent() {
         </Link>
       </Button>
 
-      <Card className="backdrop-blur-sm bg-black/40 border-zinc-800">
-        <CardHeader>
-          <CardTitle>
-            {currentPlan ? "Upgrade Subscription" : "Complete Your Subscription"}
-          </CardTitle>
-          <CardDescription>
-            {currentPlan 
-              ? `Upgrading from ${currentPlan.name} to ${selectedPlan?.name} plan`
-              : `Activating ${selectedPlan?.name} plan for ${duration} month${duration > 1 ? 's' : ''}`
-            }
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {/* Current Plan Info (if upgrading) */}
-          {currentPlan && (
-            <div className="mb-6 p-4 rounded-lg bg-secondary/50">
-              <h3 className="font-medium mb-2">Current Subscription</h3>
-              <p className="text-sm text-muted-foreground">
-                {currentPlan.name} plan active until{" "}
-                {new Date(currentPlan.endDate).toLocaleDateString()}
-              </p>
-            </div>
-          )}
-
-          {/* Payment Details */}
-          <div className="space-y-6">
-            <div>
-              <h3 className="font-medium mb-2">Payment Details</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Plan Price</span>
-                  <span>MVR {pricePerMonth}/month</span>
+      <div className="space-y-6">
+        {/* Plan Summary Card */}
+        <Card className="backdrop-blur-sm bg-black/40 border-zinc-800">
+          <CardHeader>
+            <CardTitle>Plan Summary</CardTitle>
+            <CardDescription>
+              Review your selected plan details
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-lg border p-4 space-y-3">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-medium text-lg">{selectedPlan?.name} Plan</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {duration} month{duration > 1 ? 's' : ''} subscription
+                  </p>
                 </div>
-                <div className="flex justify-between">
+                <div className="text-right">
+                  <div className="font-medium text-lg">
+                    {formatPrice(pricePerMonth)}
+                  </div>
+                  <div className="text-sm text-muted-foreground">per month</div>
+                </div>
+              </div>
+
+              {/* Features */}
+              <div className="space-y-2 pt-2 border-t">
+                {selectedPlan?.features.map((feature) => (
+                  <div key={feature} className="flex items-start text-sm">
+                    <Check className="h-4 w-4 text-primary mr-2 mt-1 flex-shrink-0" />
+                    <span>{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Price Breakdown */}
+            <div className="rounded-lg border p-4 space-y-3">
+              <h3 className="font-medium">Price Breakdown</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Monthly Price</span>
+                  <span>{formatPrice(basePrice)}</span>
+                </div>
+                {specialPrice && specialPrice !== basePrice && (
+                  <div className="flex justify-between text-sm text-green-500">
+                    <span>Special Offer Discount</span>
+                    <span>-{formatPrice(basePrice - specialPrice)}/mo</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm">
                   <span>Duration</span>
                   <span>{duration} months</span>
                 </div>
                 <div className="flex justify-between font-medium pt-2 border-t">
                   <span>Total Amount</span>
-                  <span>MVR {totalPrice}</span>
+                  <span>{formatPrice(totalPrice)}</span>
                 </div>
               </div>
             </div>
 
-            {/* Upload Receipt */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
+            {/* Current Plan Info (if upgrading) */}
+            {currentPlan && (
+              <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/10 p-4">
+                <h3 className="font-medium mb-2">Current Plan</h3>
+                <p className="text-sm text-muted-foreground">
+                  {currentPlan.name} plan active until{" "}
+                  {new Date(currentPlan.endDate).toLocaleDateString()}
+                </p>
+                <p className="text-sm text-yellow-500 mt-2">
+                  Your new plan will extend from your current end date
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Payment Upload Card */}
+        <Card className="backdrop-blur-sm bg-black/40 border-zinc-800">
+          <CardHeader>
+            <CardTitle>
+              {currentPlan ? "Upgrade Subscription" : "Complete Your Subscription"}
+            </CardTitle>
+            <CardDescription>
+              Upload your payment receipt to activate your subscription
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
                 <Label htmlFor="receipt">Upload Payment Receipt</Label>
-                <Input
-                  id="receipt"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setReceipt(e.target.files?.[0] || null)}
-                  className="cursor-pointer"
-                  required
-                />
+                <div className="mt-2">
+                  <Input
+                    id="receipt"
+                    type="file"
+                    accept="image/*,application/pdf"
+                    onChange={(e) => setReceipt(e.target.files?.[0] || null)}
+                    required
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Please upload your payment receipt to verify your subscription
+                </p>
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full" 
-                disabled={loading || !receipt}
-              >
-                {loading ? (
-                  "Processing..."
-                ) : currentPlan ? (
-                  <>
-                    <Upload className="mr-2 h-4 w-4" />
-                    Confirm Upgrade
-                  </>
-                ) : (
-                  <>
-                    <Upload className="mr-2 h-4 w-4" />
-                    Activate Subscription
-                  </>
-                )}
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading && <Upload className="h-4 w-4 animate-spin mr-2" />}
+                {currentPlan ? "Upgrade Plan" : "Activate Subscription"}
               </Button>
             </form>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
