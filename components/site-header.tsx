@@ -193,13 +193,25 @@ export function SiteHeader() {
               FAQ
             </Link>
             {user ? (
-              <button
-                onClick={handleSignOut}
-                className="text-sm font-medium text-muted-foreground hover:text-cyan flex items-center gap-2"
-              >
-                <LogOut className="h-4 w-4" />
-                Sign out
-              </button>
+              <>
+                <Button 
+                  variant="ghost" 
+                  className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-cyan"
+                  asChild
+                >
+                  <Link href="/dashboard">
+                    <LayoutDashboard className="h-4 w-4" />
+                    Dashboard
+                  </Link>
+                </Button>
+                <button
+                  onClick={handleSignOut}
+                  className="text-sm font-medium text-muted-foreground hover:text-cyan flex items-center gap-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign out
+                </button>
+              </>
             ) : (
               <>
                 <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-cyan">

@@ -12,8 +12,8 @@ export const plans = [
     ],
     deviceLimit: 1,
     specialOffers: {
-      3: 84,
-      6: 79,
+      3: 87,
+      6: 87,
     },
     popular: false,
     mobileOnly: true
@@ -32,8 +32,8 @@ export const plans = [
     ],
     deviceLimit: 2,
     specialOffers: {
-      3: 144,
-      6: 139,
+      3: 145,
+      6: 145,
     },
     popular: true
   },
@@ -52,8 +52,8 @@ export const plans = [
     ],
     deviceLimit: 3,
     specialOffers: {
-      3: 174,
-      6: 169,
+      3: 175,
+      6: 175,
     },
     popular: false
   },
@@ -72,8 +72,8 @@ export const plans = [
     ],
     deviceLimit: 4,
     specialOffers: {
-      3: 214,
-      6: 209,
+      3: 213,
+      6: 214,
     },
     popular: false
   },

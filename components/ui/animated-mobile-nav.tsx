@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { LogOut } from "lucide-react";
+import { LogOut, LayoutDashboard } from "lucide-react";
 
 interface AnimatedMobileNavProps {
   user?: any;
@@ -86,6 +86,19 @@ export function AnimatedMobileNav({ user, handleSignOut }: AnimatedMobileNavProp
               transition={{ delay: 0.3 }}
             >
               <ul className="flex flex-col items-center justify-center space-y-8">
+                {user && (
+                  <motion.li
+                    className="text-2xl font-medium text-black dark:text-white cursor-pointer"
+                    whileHover={{ scale: 1.1 }}
+                    onClick={() => handleNavigation('/dashboard')}
+                  >
+                    <span className="flex items-center gap-2">
+                      <LayoutDashboard className="h-6 w-6" />
+                      Dashboard
+                    </span>
+                  </motion.li>
+                )}
+
                 <motion.li
                   className="text-2xl font-medium text-black dark:text-white cursor-pointer"
                   whileHover={{ scale: 1.1 }}

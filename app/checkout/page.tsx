@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Upload, Check } from "lucide-react";
+import { ArrowLeft, Upload, Check, Copy } from "lucide-react";
 import Link from "next/link";
 
 function CheckoutPageContent() {
@@ -158,6 +158,23 @@ function CheckoutPageContent() {
   // Format price with MVR
   const formatPrice = (price: number) => `MVR ${price.toLocaleString()}`;
 
+  const copyToClipboard = async (text: string, accountHolder: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: "Copied to clipboard",
+        description: `Account number for ${accountHolder} has been copied.`,
+        duration: 2000,
+      });
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Failed to copy",
+        description: "Please try copying manually.",
+      });
+    }
+  };
+
   return (
     <div className="container max-w-xl py-8 px-4 md:py-12">
       <Button variant="ghost" asChild className="mb-6 gap-2">
@@ -256,6 +273,36 @@ function CheckoutPageContent() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Add Account Details Box */}
+            <div className="mb-6 rounded-lg border p-4 space-y-3">
+              <h3 className="font-medium">Bank Account Details</h3>
+              <div className="space-y-2">
+                <div className="flex flex-col space-y-2">
+                  <button 
+                    onClick={() => copyToClipboard("7708384659101", "Ahmed Shan")}
+                    className="text-sm flex items-center justify-between p-2 hover:bg-white/5 rounded-lg transition-colors"
+                  >
+                    <div>
+                      <span className="font-medium">BML:</span> 7708384659101
+                      <span className="text-muted-foreground ml-2">- Ahmed Shan</span>
+                    </div>
+                    <Copy className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                  
+                  <button 
+                    onClick={() => copyToClipboard("7701152951101", "Ibrahim Asim")}
+                    className="text-sm flex items-center justify-between p-2 hover:bg-white/5 rounded-lg transition-colors"
+                  >
+                    <div>
+                      <span className="font-medium">BML:</span> 7701152951101
+                      <span className="text-muted-foreground ml-2">- Ibrahim Asim</span>
+                    </div>
+                    <Copy className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <Label htmlFor="receipt">Upload Payment Receipt</Label>

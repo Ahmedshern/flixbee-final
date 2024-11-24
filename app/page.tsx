@@ -83,7 +83,7 @@ export default function Home() {
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
             <span className="text-black dark:text-white">Your Entertainment,</span>
             <div className="mt-8 sm:mt-10 md:mt-5">
-              <span className="text-cyan font-bold">
+              <span className="neon font-bold">
                 UNLEASHED
               </span>
             </div>
