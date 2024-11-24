@@ -279,26 +279,17 @@ function CheckoutPageContent() {
               <div className="space-y-2">
                 <div className="flex flex-col space-y-2">
                   <button 
-                    onClick={() => copyToClipboard("7708384659101", "Ahmed Shan")}
+                    onClick={() => copyToClipboard("7730000696003", "BML")}
                     className="text-sm flex items-center justify-between p-2 hover:bg-white/5 rounded-lg transition-colors"
                   >
                     <div>
-                      <span className="font-medium">BML:</span> 7708384659101
-                      <span className="text-muted-foreground ml-2">- Ahmed Shan</span>
+                      <span className="font-medium">BML:</span> 7730000696003
+                      
                     </div>
                     <Copy className="h-4 w-4 text-muted-foreground" />
                   </button>
                   
-                  <button 
-                    onClick={() => copyToClipboard("7701152951101", "Ibrahim Asim")}
-                    className="text-sm flex items-center justify-between p-2 hover:bg-white/5 rounded-lg transition-colors"
-                  >
-                    <div>
-                      <span className="font-medium">BML:</span> 7701152951101
-                      <span className="text-muted-foreground ml-2">- Ibrahim Asim</span>
-                    </div>
-                    <Copy className="h-4 w-4 text-muted-foreground" />
-                  </button>
+                  
                 </div>
               </div>
             </div>
