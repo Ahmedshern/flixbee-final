@@ -4,8 +4,6 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { applyActionCode, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { doc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
@@ -36,23 +34,22 @@ export default function ActionPage() {
           console.log('Starting verification process...');
           await applyActionCode(auth, oobCode);
           
-          // Try to sign in the user to get their UID
+          // Update Firestore through API
           if (email) {
             try {
-              const userCred = await signInWithEmailAndPassword(auth, email, '');
-              const user = userCred.user;
-              
-              // Update Firestore
-              await updateDoc(doc(db, "users", user.uid), {
-                emailVerified: true,
-                updatedAt: new Date().toISOString()
+              const response = await fetch('/api/auth/verify-email', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email }),
               });
 
-              // Sign out after updating
-              await auth.signOut();
+              if (!response.ok) {
+                console.warn('Failed to update Firestore verification status');
+              }
             } catch (error) {
-              console.warn('Could not auto-update Firestore:', error);
-              // Continue with verification success even if Firestore update fails
+              console.warn('Error updating Firestore:', error);
             }
           }
           

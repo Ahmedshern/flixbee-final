@@ -67,7 +67,7 @@ export default function RegisterPage() {
       }
 
       await setDoc(doc(db, "users", user.uid), {
-        email: user.email,
+        email: user.email?.toLowerCase(),
         embyUserId: data.Id,
         subscriptionStatus: "inactive",
         subscriptionEnd: null,

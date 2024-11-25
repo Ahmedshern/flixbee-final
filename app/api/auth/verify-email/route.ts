@@ -4,23 +4,31 @@ import { adminDb } from "@/lib/firebase-admin";
 
 export async function POST(request: Request) {
   try {
-    const { userId } = await request.json();
+    const { email } = await request.json();
 
-    if (!userId) {
+    if (!email) {
       return NextResponse.json(
-        { error: 'User ID is required' },
+        { error: 'Email is required' },
         { status: 400 }
       );
     }
 
-    // Get user from Firebase Auth
-    const userRecord = await getAuth().getUser(userId);
+    // Get user by email
+    const userRecord = await getAuth().getUserByEmail(email);
 
     // Update Firestore
-    await adminDb.collection('users').doc(userId).update({
-      emailVerified: userRecord.emailVerified,
-      updatedAt: new Date().toISOString()
-    });
+    const userQuery = await adminDb.collection('users')
+      .where('email', '==', email.toLowerCase())
+      .limit(1)
+      .get();
+
+    if (!userQuery.empty) {
+      const userDoc = userQuery.docs[0];
+      await adminDb.collection('users').doc(userDoc.id).update({
+        emailVerified: true,
+        updatedAt: new Date().toISOString()
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
