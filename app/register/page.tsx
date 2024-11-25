@@ -41,9 +41,9 @@ export default function RegisterPage() {
       const user = userCredential.user;
 
       const actionCodeSettings = {
-        url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/verify-email`,
-        handleCodeInApp: true,
-        dynamicLinkDomain: process.env.NEXT_PUBLIC_DYNAMIC_LINK_DOMAIN
+        url: `${process.env.NEXT_PUBLIC_APP_URL}/auth/action`,
+        handleCodeInApp: false,
+        continueUrl: `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify-email`
       };
       await sendEmailVerification(user, actionCodeSettings);
 
