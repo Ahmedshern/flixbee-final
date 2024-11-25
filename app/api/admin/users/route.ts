@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { cookies } from 'next/headers';
-import { verifyAdminSession } from '@/lib/auth-admin';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -9,9 +8,9 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
     const cookieStore = cookies();
-    const adminLoggedIn = cookieStore.get('adminLoggedIn');
+    const adminLoggedIn = cookieStore.get('adminLoggedIn')?.value;
     
-    if (!adminLoggedIn || adminLoggedIn.value !== 'true') {
+    if (!adminLoggedIn || adminLoggedIn !== 'true') {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }

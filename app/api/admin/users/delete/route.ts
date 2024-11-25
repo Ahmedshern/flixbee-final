@@ -16,11 +16,10 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    // Check for admin cookie
-    const cookieStore = await cookies();
-    const adminLoggedIn = cookieStore.get('adminLoggedIn');
+    const cookieStore = cookies();
+    const adminLoggedIn = cookieStore.get('adminLoggedIn')?.value;
     
-    if (!adminLoggedIn || adminLoggedIn.value !== 'true') {
+    if (!adminLoggedIn || adminLoggedIn !== 'true') {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
