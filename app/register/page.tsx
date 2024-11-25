@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification, signOut } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,15 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      const actionCodeSettings = {
+        url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/verify-email`,
+        handleCodeInApp: false,
+      };
+      await sendEmailVerification(user, actionCodeSettings);
+
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
@@ -56,29 +65,29 @@ export default function RegisterPage() {
         throw new Error('Invalid response from streaming service');
       }
 
-      // Create Firebase user
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      // Create Firestore document
       await setDoc(doc(db, "users", user.uid), {
         email: user.email,
         embyUserId: data.Id,
         subscriptionStatus: "inactive",
         subscriptionEnd: null,
         plan: null,
+        emailVerified: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       });
 
+      await signOut(auth);
+
       toast({
         title: "Account created successfully!",
-        description: "Please proceed to select your subscription plan.",
+        description: "Please check your email to verify your account before logging in.",
       });
 
-      router.push("/dashboard");
+      router.push("/auth/verification-sent");
     } catch (error: any) {
       console.error("Registration error:", error);
+      await signOut(auth);
+      
       toast({
         variant: "destructive",
         title: "Registration failed",

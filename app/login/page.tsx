@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
@@ -19,36 +19,64 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useAuthContext();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (user) {
+    if (user?.emailVerified) {
       router.push("/dashboard");
     }
   }, [user, router]);
+
+  useEffect(() => {
+    const verified = searchParams.get("verified");
+    if (verified === "true") {
+      toast({
+        title: "Email Verified",
+        description: "Your email has been verified. You can now log in.",
+      });
+    }
+  }, [searchParams, toast]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      if (!userCredential.user.emailVerified) {
+        // Sign out the user immediately if email is not verified
+        await auth.signOut();
+        
+        toast({
+          variant: "destructive",
+          title: "Email not verified",
+          description: "Please verify your email before logging in.",
+        });
+        router.push("/auth/verification-sent");
+        return;
+      }
+
       router.push("/dashboard");
       toast({
         title: "Welcome back!",
         description: "You've successfully logged in.",
       });
     } catch (error: any) {
+      console.error('Login error:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message,
+        description: error.message === 'Firebase: Error (auth/invalid-credential).' 
+          ? "Invalid email or password"
+          : error.message,
       });
     } finally {
       setLoading(false);
     }
   };
 
-  if (user) {
+  if (user?.emailVerified) {
     return null;
   }
 
