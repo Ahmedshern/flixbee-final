@@ -43,7 +43,7 @@ export default function RegisterPage() {
       const actionCodeSettings = {
         url: `${process.env.NEXT_PUBLIC_APP_URL}/auth/action`,
         handleCodeInApp: false,
-        continueUrl: `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify-email`
+        continueUrl: `${process.env.NEXT_PUBLIC_APP_URL}/auth/action?email=${encodeURIComponent(email)}`
       };
       await sendEmailVerification(user, actionCodeSettings);
 

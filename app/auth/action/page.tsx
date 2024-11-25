@@ -2,25 +2,29 @@
 
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { applyActionCode } from "firebase/auth";
+import { applyActionCode, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ActionPage() {
   const [verifying, setVerifying] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { toast } = useToast();
   
   useEffect(() => {
     async function handleAction() {
       try {
         const mode = searchParams.get('mode');
         const oobCode = searchParams.get('oobCode');
-        const continueUrl = searchParams.get('continueUrl');
+        const email = searchParams.get('email');
 
         if (!mode || !oobCode) {
           setError("Invalid action link");
@@ -32,10 +36,30 @@ export default function ActionPage() {
           console.log('Starting verification process...');
           await applyActionCode(auth, oobCode);
           
-          // Reload the user to update the emailVerified property
-          if (auth.currentUser) {
-            await auth.currentUser.reload();
+          // Try to sign in the user to get their UID
+          if (email) {
+            try {
+              const userCred = await signInWithEmailAndPassword(auth, email, '');
+              const user = userCred.user;
+              
+              // Update Firestore
+              await updateDoc(doc(db, "users", user.uid), {
+                emailVerified: true,
+                updatedAt: new Date().toISOString()
+              });
+
+              // Sign out after updating
+              await auth.signOut();
+            } catch (error) {
+              console.warn('Could not auto-update Firestore:', error);
+              // Continue with verification success even if Firestore update fails
+            }
           }
+          
+          toast({
+            title: "Email Verified",
+            description: "Your email has been successfully verified. You can now log in.",
+          });
           
           // Redirect to login with verified flag
           setTimeout(() => {
@@ -57,7 +81,7 @@ export default function ActionPage() {
     }
 
     handleAction();
-  }, [searchParams, router]);
+  }, [searchParams, router, toast]);
 
   if (verifying) {
     return (

@@ -12,6 +12,7 @@
     "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
+    "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
     "@fortawesome/free-brands-svg-icons": "^6.6.0",
     "@fortawesome/free-regular-svg-icons": "^6.6.0",
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
@@ -49,7 +50,7 @@
     "cmdk": "^1.0.3",
     "date-fns": "^3.3.1",
     "embla-carousel-react": "^8.3.1",
-    "firebase": "^10.9.0",
+    "firebase": "^10.14.1",
     "firebase-admin": "^12.7.0",
     "form-data": "^4.0.1",
     "framer-motion": "^11.11.11",

@@ -12,43 +12,24 @@ export function useUsers() {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const usersSnapshot = await getDocs(collection(db, 'users'));
-      const usersData = await Promise.all(
-        usersSnapshot.docs.map(async (doc) => {
-          const userData = doc.data();
-          
-          // Fetch receipts collection for each user
-          const receiptsSnapshot = await getDocs(collection(db, 'users', doc.id, 'receipts'));
-          const receipts: Receipt[] = receiptsSnapshot.docs.map(receiptDoc => {
-            const receiptData = receiptDoc.data();
-            return {
-              id: receiptDoc.id,
-              url: receiptData.url,
-              date: receiptData.date,
-              amount: receiptData.amount,
-              planName: receiptData.planName,
-              uploadDate: receiptData.uploadDate || receiptData.date // fallback to date if uploadDate not available
-            };
-          });
+      // First verify admin session
+      const response = await fetch('/api/admin/users', {
+        method: 'GET',
+        credentials: 'include',
+      });
 
-          // Sort receipts by date, newest first
-          receipts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      if (!response.ok) {
+        throw new Error('Unauthorized');
+      }
 
-          return {
-            id: doc.id,
-            ...userData,
-            paymentReceipts: receipts,
-          } as User;
-        })
-      );
-      
+      const { users: usersData } = await response.json();
       setUsers(usersData);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to fetch users"
+        description: "Failed to fetch users. Please check your permissions."
       });
     } finally {
       setLoading(false);

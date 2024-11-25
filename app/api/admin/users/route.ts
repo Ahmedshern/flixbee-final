@@ -1,23 +1,64 @@
-import { NextResponse } from 'next/server';
-import { EmbyService } from '@/lib/services/emby';
+import { NextRequest, NextResponse } from 'next/server';
+import { adminDb } from '@/lib/firebase-admin';
+import { cookies } from 'next/headers';
+import { verifyAdminSession } from '@/lib/auth-admin';
 
-export async function DELETE(request: Request) {
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export async function GET(request: NextRequest) {
   try {
-    const { embyUserId } = await request.json();
+    const cookieStore = cookies();
+    const adminLoggedIn = cookieStore.get('adminLoggedIn');
     
-    if (!embyUserId) {
+    if (!adminLoggedIn || adminLoggedIn.value !== 'true') {
       return NextResponse.json(
-        { error: 'No Emby user ID provided' },
-        { status: 400 }
+        { error: 'Unauthorized' },
+        { status: 401 }
       );
     }
 
-    await EmbyService.deleteUser(embyUserId);
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Error deleting Emby user:', error);
+    // Fetch users from Firestore using admin SDK
+    const usersSnapshot = await adminDb.collection('users').get();
+    const usersData = await Promise.all(
+      usersSnapshot.docs.map(async (doc) => {
+        const userData = doc.data();
+        
+        // Fetch receipts collection for each user
+        const receiptsSnapshot = await adminDb
+          .collection('users')
+          .doc(doc.id)
+          .collection('receipts')
+          .get();
+
+        const receipts = receiptsSnapshot.docs.map(receiptDoc => {
+          const receiptData = receiptDoc.data();
+          return {
+            id: receiptDoc.id,
+            url: receiptData.url,
+            date: receiptData.date,
+            amount: receiptData.amount,
+            planName: receiptData.planName,
+            uploadDate: receiptData.uploadDate || receiptData.date
+          };
+        });
+
+        // Sort receipts by date, newest first
+        receipts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+        return {
+          id: doc.id,
+          ...userData,
+          paymentReceipts: receipts,
+        };
+      })
+    );
+
+    return NextResponse.json({ users: usersData });
+  } catch (error: any) {
+    console.error('Error in users route:', error);
     return NextResponse.json(
-      { error: 'Failed to delete user' },
+      { error: error.message || 'Failed to fetch users' },
       { status: 500 }
     );
   }

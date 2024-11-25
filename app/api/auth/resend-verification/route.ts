@@ -25,8 +25,9 @@ export async function POST(request: Request) {
 
     // Generate email verification link with correct settings
     const actionCodeSettings = {
-      url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/verify-email`,
-      handleCodeInApp: true,
+      url: `${process.env.NEXT_PUBLIC_APP_URL}/auth/action`,
+      handleCodeInApp: false,
+      continueUrl: `${process.env.NEXT_PUBLIC_APP_URL}/auth/action?email=${encodeURIComponent(email)}`
     };
 
     const verificationLink = await getAuth().generateEmailVerificationLink(
