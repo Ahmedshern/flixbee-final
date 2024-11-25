@@ -28,7 +28,7 @@ export const plans = [
       "Watch on 2 Devices Simultaneously",
       "Full HD Streaming",
       "Personalized Watchlist",
-      "Parental Controls",
+      
     ],
     deviceLimit: 2,
     specialOffers: {
@@ -48,7 +48,7 @@ export const plans = [
       "Full HD Streaming",
       "Personalized Watchlist",
       "Offline Viewing",
-      "Parental Controls",
+      
     ],
     deviceLimit: 3,
     specialOffers: {
@@ -68,7 +68,7 @@ export const plans = [
       "Full HD Streaming",
       "Personalized Watchlist",
       "Offline Viewing",
-      "Parental Controls",
+      
     ],
     deviceLimit: 4,
     specialOffers: {
