@@ -58,12 +58,12 @@ export default function VerificationSentPage() {
           </div>
           <CardTitle className="text-2xl text-center">Check Your Email</CardTitle>
           <CardDescription className="text-center">
-            We've sent you a verification link. Please check your email and click the link to verify your account.
+            We&apos;ve sent you a verification link. Please check your email and click the link to verify your account.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center space-y-4">
           <p className="text-sm text-muted-foreground text-center">
-            The verification link will expire in 24 hours. If you don't see the email, please check your spam folder.
+            The verification link will expire in 24 hours. If you don&apos;t see the email, please check your spam folder.
           </p>
           <div className="flex flex-col space-y-2 w-full">
             <Button
