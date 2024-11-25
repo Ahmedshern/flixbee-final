@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const cookieStore = cookies();
-    const adminLoggedIn = cookieStore.get('adminLoggedIn')?.value;
+    const adminLoggedIn = (await cookieStore).get('adminLoggedIn')?.value;
     
     if (!adminLoggedIn || adminLoggedIn !== 'true') {
       return NextResponse.json(
