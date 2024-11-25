@@ -42,7 +42,8 @@ export default function RegisterPage() {
 
       const actionCodeSettings = {
         url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/verify-email`,
-        handleCodeInApp: false,
+        handleCodeInApp: true,
+        dynamicLinkDomain: process.env.NEXT_PUBLIC_DYNAMIC_LINK_DOMAIN
       };
       await sendEmailVerification(user, actionCodeSettings);
 
@@ -83,7 +84,7 @@ export default function RegisterPage() {
         description: "Please check your email to verify your account before logging in.",
       });
 
-      router.push("/auth/verification-sent");
+      router.push(`/auth/verification-sent?email=${encodeURIComponent(email)}`);
     } catch (error: any) {
       console.error("Registration error:", error);
       await signOut(auth);

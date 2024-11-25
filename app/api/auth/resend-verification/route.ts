@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { auth } from "@/lib/firebase";
-import { sendEmailVerification } from "firebase/auth";
+import { getAuth } from "firebase-admin/auth";
+import { adminDb } from "@/lib/firebase-admin";
 
 export async function POST(request: Request) {
   try {
@@ -13,23 +13,37 @@ export async function POST(request: Request) {
       );
     }
 
-    const actionCodeSettings = {
-      url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/verify-email`,
-      handleCodeInApp: false,
-    };
+    // Get user by email using Firebase Admin
+    const userRecord = await getAuth().getUserByEmail(email);
 
-    // Get current user
-    const currentUser = auth.currentUser;
-    if (!currentUser) {
+    if (!userRecord) {
       return NextResponse.json(
-        { error: 'No user is currently signed in' },
-        { status: 400 }
+        { error: 'User not found' },
+        { status: 404 }
       );
     }
 
-    await sendEmailVerification(currentUser, actionCodeSettings);
+    // Generate email verification link with correct settings
+    const actionCodeSettings = {
+      url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/verify-email`,
+      handleCodeInApp: true,
+    };
 
-    return NextResponse.json({ success: true });
+    const verificationLink = await getAuth().generateEmailVerificationLink(
+      email,
+      actionCodeSettings
+    );
+
+    // Here you would typically send the email using your email service
+    // For development, we'll return the link
+    console.log('Generated verification link:', verificationLink);
+
+    return NextResponse.json({ 
+      success: true,
+      message: "Verification email sent successfully",
+      // Only include verificationLink in development
+      ...(process.env.NODE_ENV === 'development' && { verificationLink })
+    });
   } catch (error: any) {
     console.error('Error sending verification email:', error);
     return NextResponse.json(

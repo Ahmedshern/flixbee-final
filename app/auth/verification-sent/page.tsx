@@ -6,15 +6,23 @@ import { Button } from "@/components/ui/button";
 import { Mail, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
-import { useAuthContext } from "@/components/auth-provider";
+import { useSearchParams } from "next/navigation";
 
 export default function VerificationSentPage() {
   const [resending, setResending] = useState(false);
   const { toast } = useToast();
-  const { user } = useAuthContext();
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email");
 
   const handleResendVerification = async () => {
-    if (!user?.email) return;
+    if (!email) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No email address found. Please try registering again.",
+      });
+      return;
+    }
     
     setResending(true);
     try {
@@ -23,8 +31,7 @@ export default function VerificationSentPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: user.email }),
-        credentials: 'include',
+        body: JSON.stringify({ email }),
       });
 
       const data = await response.json();
@@ -69,7 +76,7 @@ export default function VerificationSentPage() {
             <Button
               variant="secondary"
               onClick={handleResendVerification}
-              disabled={resending || !user?.email}
+              disabled={resending || !email}
               className="w-full"
             >
               {resending ? (

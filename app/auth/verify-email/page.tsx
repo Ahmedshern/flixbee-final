@@ -14,23 +14,28 @@ export default function VerifyEmailPage() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const oobCode = searchParams.get("oobCode");
-  const mode = searchParams.get("mode");
   
   useEffect(() => {
     async function verifyEmail() {
-      if (!oobCode || mode !== "verifyEmail") {
-        setError("Invalid verification link");
-        setVerifying(false);
-        return;
-      }
-
       try {
-        console.log('Starting verification process with code:', oobCode);
+        // Get all URL parameters
+        const params = new URLSearchParams(window.location.search);
+        const oobCode = params.get('oobCode');
+        const mode = params.get('mode');
+
+        if (!oobCode || mode !== 'verifyEmail') {
+          setError("Invalid verification link. Please request a new one.");
+          setVerifying(false);
+          return;
+        }
+
+        console.log('Starting verification process...');
         await applyActionCode(auth, oobCode);
         
         // Reload the user to update the emailVerified property
-        await auth.currentUser?.reload();
+        if (auth.currentUser) {
+          await auth.currentUser.reload();
+        }
         
         // Wait briefly to show success state before redirecting
         setTimeout(() => {
@@ -41,7 +46,7 @@ export default function VerifyEmailPage() {
         setError(
           error.code === 'auth/invalid-action-code'
             ? "This verification link has expired or already been used."
-            : error.message || "Failed to verify email"
+            : "Failed to verify email. Please try again."
         );
       } finally {
         setVerifying(false);
@@ -49,7 +54,7 @@ export default function VerifyEmailPage() {
     }
 
     verifyEmail();
-  }, [oobCode, mode, router]);
+  }, [router]);
 
   if (verifying) {
     return (
